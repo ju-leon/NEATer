@@ -14,10 +14,16 @@ class NeatOptimizer():
 
     def fit(self, data, loss=torch.nn.MSELoss(), epochs=10, validation=None):
         X, Y = data
+
+        X = torch.FloatTensor(X)
+        Y = torch.FloatTensor(Y)
+
         if validation == None:
             val_X = val_Y = None
         else:
             val_X, val_Y = validation
+            val_X = torch.FloatTensor(val_X)
+            val_Y = torch.FloatTensor(val_Y)
 
         batch_start = 0
 
@@ -30,4 +36,8 @@ class NeatOptimizer():
 
             batch_start = (batch_start + self.batch_size) % len(X)
 
-            self.strategy.eval_population((X, Y), (val_X, val_Y), loss)
+            result = self.strategy.eval_population(
+                (X, Y), (val_X, val_Y), loss)
+
+            t.set_description("Population: loss_min={:.4f}, loss_avg={:.4f}".format(
+                result['loss_min'], result['loss_avg']))

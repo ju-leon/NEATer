@@ -49,6 +49,12 @@ class DenseNeat(Strategy):
                 self.mutate_weights(child)
                 self.networks.append(child)
 
+        results = dict()
+        results['loss_avg'] = torch.mean(losses)
+        results['loss_min'] = torch.min(losses)
+
+        return results
+
     def mutate_weights(self, network, intensity=0.05):
         for layer in network.layers:
             layer.add_weights(torch.normal(
@@ -63,7 +69,7 @@ class DenseNeat(Strategy):
                     weights=torch.normal(
                         mean=0,
                         std=intensity,
-                        size=network.layers[i].size),
+                        size=(network.layers[i].input_shape, 1)),
                     bias=torch.normal(mean=0, std=intensity, size=(1,)),
                 )
 
@@ -71,7 +77,7 @@ class DenseNeat(Strategy):
                     weights=torch.normal(
                         mean=0,
                         std=intensity,
-                        size=network.layers[i+1].size)
+                        size=(1, network.layers[i+1].output_shape))
                 )
             elif random.choice([True, False], p=[propa, 1-propa]):
                 if network.layers[i].output_shape > 3:
