@@ -7,7 +7,7 @@ from numpy import random
 import copy
 
 
-class DenseNeat(Strategy):
+class SparseNeat(Strategy):
 
     def __init__(self, num_survivors=10, num_children=10, activation=ReLu()) -> None:
         self.num_survivors = num_survivors
@@ -62,30 +62,43 @@ class DenseNeat(Strategy):
 
         return results
 
-    def mutate_weights(self, network, intensity=0.05):
+    def mutate_weights(self, network, intensity=0.1):
         for layer in network.layers:
-            layer.add_weights(torch.normal(
-                mean=0, std=intensity, size=layer.size))
-            layer.add_biases(torch.normal(
-                mean=0, std=intensity, size=(layer.output_shape,)))
+            # TODO: Only mutate randomly?
+            x = torch.randint(layer.size[0], size=(1,))
+            y = torch.randint(layer.size[1], size=(1,))
+
+            weights = torch.zeros(layer.size)
+            weights[x, y] = torch.normal(
+                mean=0, std=intensity, size=(1,))
+            layer.add_weights(weights)
+
+            biases = torch.zeros(layer.output_shape)
+            biases[y] = torch.normal(mean=0, std=intensity, size=(1,))
+            layer.add_biases(biases)
 
     def mutate_layers(self, network, propa=0.5, intensity=0.2):
         for i in range(len(network.layers)-1):
             if random.choice([True, False], p=[propa, 1-propa]):
+
+                x = torch.randint(network.layers[i].input_shape, size=(1,))
+
+                weights = torch.zeros(network.layers[i].input_shape, 1)
+                weights[x, 0] = torch.normal(
+                    mean=0, std=intensity, size=(1,))
                 network.layers[i].extend(
-                    weights=torch.normal(
-                        mean=0,
-                        std=intensity,
-                        size=(network.layers[i].input_shape, 1)),
-                    bias=torch.normal(mean=0, std=intensity, size=(1,)),
+                    weights=weights,
+                    bias=torch.zeros((1,)),
                 )
 
+                y = torch.randint(network.layers[i+1].output_shape, size=(1,))
+                weights = torch.zeros(1, network.layers[i+1].output_shape)
+                weights[0, y] = torch.normal(
+                    mean=0, std=intensity, size=(1,))
                 network.layers[i+1].extend_input(
-                    weights=torch.normal(
-                        mean=0,
-                        std=intensity,
-                        size=(1, network.layers[i+1].output_shape))
+                    weights=weights
                 )
+
             elif random.choice([True, False], p=[propa, 1-propa]):
                 if network.layers[i].output_shape > 3:
                     network.layers[i].decrease()

@@ -1,4 +1,5 @@
 import abc
+from neat.network import Network
 
 
 class Strategy():
@@ -10,9 +11,13 @@ class Strategy():
         pass
 
     @abc.abstractmethod
-    def eval_population(self, data, validation, lossfunction) -> dict:
+    def eval_population(self, data, validation, loss) -> dict:
         pass
 
     @abc.abstractmethod
     def step(self, data):
+        pass
+
+    @abc.abstractmethod
+    def get_best_network(self) -> Network:
         pass

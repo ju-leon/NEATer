@@ -63,7 +63,11 @@ class ExtendableLayer(Layer):
             if self.output_shape > size:
                 self.decrease()
             elif self.output_shape < size:
-                self.extend()
+                self.extend(
+                    weights=torch.zeros(
+                        (self.input_shape, 1)),
+                    bias=torch.zeros(1,),
+                )
 
     def forward(self, x):
         return self.activation(torch.matmul(x, self.weights) + self.biases)
