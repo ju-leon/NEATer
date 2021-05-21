@@ -5,6 +5,7 @@ from neat.network import Network
 import torch
 from numpy import random
 import copy
+from tqdm import tqdm
 
 
 class SparseNeat(Strategy):
@@ -25,6 +26,43 @@ class SparseNeat(Strategy):
 
     def get_best_network(self) -> Network:
         return self.best_network
+
+    def solve_epoch(self, env, epoch_len, discrete):
+        rewards = []
+        for network in tqdm(self.networks):
+            current_reward = 0
+            observation = env.reset()
+            for _ in range(epoch_len):
+                pred = network.predict(torch.FloatTensor(observation))
+                if discrete:
+                    pred = torch.argmax(pred).numpy()
+                else:
+                    pred = pred.numpy()
+                observation, reward, done, info = env.step(pred)
+                current_reward += reward
+                if done:
+                    break
+            rewards.append(current_reward)
+
+        rewards = torch.FloatTensor(rewards)
+        idx = torch.argsort(rewards, descending=True)
+
+        survivors = [self.networks[x] for x in idx[:self.num_survivors]]
+
+        self.best_network = self.networks[idx[0]]
+
+        # Mutate all surviors and use them as the new networks
+        # The best network survives
+        self.networks = [self.best_network]
+        for survivor in survivors:
+            for _ in range(self.num_children):
+                child = copy.deepcopy(survivor)
+                self.mutate_topology(child)
+                self.mutate_layers(child)
+                self.mutate_weights(child)
+                self.networks.append(child)
+
+        return rewards
 
     def eval_population(self, data, validation, loss) -> torch.Tensor:
         X, Y = data
@@ -62,7 +100,7 @@ class SparseNeat(Strategy):
 
         return results
 
-    def mutate_weights(self, network, intensity=0.1):
+    def mutate_weights(self, network, intensity=0.5):
         for layer in network.layers:
             # TODO: Only mutate randomly?
             x = torch.randint(layer.size[0], size=(1,))
@@ -77,7 +115,7 @@ class SparseNeat(Strategy):
             biases[y] = torch.normal(mean=0, std=intensity, size=(1,))
             layer.add_biases(biases)
 
-    def mutate_layers(self, network, propa=0.5, intensity=0.2):
+    def mutate_layers(self, network, propa=0.1, intensity=0.2):
         for i in range(len(network.layers)-1):
             if random.choice([True, False], p=[propa, 1-propa]):
 
@@ -104,7 +142,7 @@ class SparseNeat(Strategy):
                     network.layers[i].decrease()
                     network.layers[i+1].decrease_input()
 
-    def mutate_topology(self, network, propa=0.2, activation="tanh"):
+    def mutate_topology(self, network, propa=0.1, intensity=0.5):
         choice = random.choice([0, 1], p=[propa, 1-propa])
         # Add a Layer
         if choice == 0:
@@ -119,6 +157,17 @@ class SparseNeat(Strategy):
                 layer = ExtendableLayer(input_shape=network.layers[index-1].output_shape,
                                         output_shape=network.layers[index].input_shape,
                                         )
+
+            x = torch.randint(layer.size[0], size=(1,))
+            y = torch.randint(layer.size[1], size=(1,))
+            weights = torch.eye(*layer.size)
+            weights[x, y] = torch.normal(
+                mean=0, std=intensity, size=(1,))
+            layer.add_weights(weights)
+
+            biases = torch.zeros(layer.output_shape)
+            biases[y] = torch.normal(mean=0, std=intensity, size=(1,))
+            layer.add_biases(biases)
 
             network.layers.insert(index, layer)
         # Remove a layer

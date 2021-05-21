@@ -11,6 +11,12 @@ class NeatOptimizer():
 
         self.strategy.init_population(input_shape, output_shape)
 
+    def solve(self, environment, max_generations=10, epoch_len=100, goal='min', discrete=True):
+        for generation in range(max_generations):
+            rewards = self.strategy.solve_epoch(environment, epoch_len, discrete)
+            print("Generation {}/{}. Best: {}, Average: {}".format(
+                generation, max_generations, torch.max(rewards), torch.mean(rewards)))
+
     def fit(self, data, loss=torch.nn.MSELoss(), epochs=10, batch_size=32, validation=None):
         X, Y = data
         #X = torch.FloatTensor(X)

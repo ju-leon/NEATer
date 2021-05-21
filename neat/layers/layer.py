@@ -9,7 +9,7 @@ class Layer():
 
 
 class ExtendableLayer(Layer):
-    def __init__(self, input_shape, output_shape, activation=torch.nn.ReLU()):
+    def __init__(self, input_shape, output_shape, activation=torch.nn.Tanh()):
         self.weights = torch.zeros(input_shape, output_shape)
 
         # TODO: Initialize
