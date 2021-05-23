@@ -11,6 +11,10 @@ class Strategy():
         pass
 
     @abc.abstractmethod
+    def evolve(self, max_generations: int) -> dict:
+        pass
+
+    @abc.abstractmethod
     def eval_population(self, data, validation, loss) -> dict:
         pass
 
