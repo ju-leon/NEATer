@@ -1,3 +1,4 @@
+from neat.strategies.neat.genes import EdgeGene, NodeGene
 from random import choice
 from neat.strategies.neat.graph import node
 from neat.strategies.neat.graph.edge import Edge
@@ -26,16 +27,17 @@ class Genome():
 
         self.counter = 0
 
-    def add_edge(self, input, output):
-        self.edges.append(Edge(input, output, 1))
-
-    def mutate_connection(self):
+    def mutate_connection(self) -> Edge:
         start = choice(self.nodes + self.input_nodes)
         end = choice(self.nodes + self.output_nodes)
 
         if (start != end) and not (end.id in start.required_nodes):
             edge = Edge(start, end, 1)
             self.edges.append(edge)
+
+            return edge
+        else:
+            return None
 
     def mutate_node(self):
         if self.edges != []:
@@ -54,6 +56,10 @@ class Genome():
             self.nodes.append(new_node)
             self.edges.append(new_edge)
             self.counter += 1
+
+            return new_node, new_edge
+        else:
+            return None, None
 
     def foreward(self, inputs):
         # Reset cache of all nods before prediction
