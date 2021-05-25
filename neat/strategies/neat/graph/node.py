@@ -16,13 +16,19 @@ class Node():
     @functools.lru_cache(maxsize=300)
     def call(self):
         result = 0
-        self.required_nodes = []
         for input in self.inputs:
-            out, nodes = input.call()
-            self.required_nodes += nodes
+            out = input.call()
             result += out
 
-        return (self.activation(result), self.required_nodes + [self.id])
+        return self.activation(result)
+
+    @functools.lru_cache(maxsize=300)
+    def get_dependencies(self):
+        self.required_nodes = []
+        for input in self.inputs:
+            self.required_nodes += input.get_dependencies()
+
+        return self.required_nodes + [self.id]
 
     def reset_cache(self):
         # if self.call.cache_info().misses > 0:
@@ -30,6 +36,7 @@ class Node():
         # if self.call.cache_info().hits > 0:
         #    print(self.call.cache_info())
         self.call.cache_clear()
+        self.get_dependencies().clear()
 
     def __repr__(self) -> str:
         return "[Node {}, required={}]".format(self.id, self.required_nodes)
@@ -45,7 +52,10 @@ class InputNode(Node):
         self.value = x
 
     def call(self) -> float:
-        return (self.value, [self.id])
+        return self.value
+
+    def get_dependencies(self):
+        return [self.id]
 
     def __repr__(self) -> str:
         return "[InputNode {}]".format(self.id)

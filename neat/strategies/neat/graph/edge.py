@@ -7,8 +7,11 @@ class Edge():
         output.add_connection(self)
 
     def call(self):
-        out, nodes = self.input.call()
-        return (out * self.weight, nodes)
+        out = self.input.call()
+        return out * self.weight
+
+    def get_dependencies(self):
+        return self.input.get_dependencies()
 
     def change_input(self, node):
         self.input = node
