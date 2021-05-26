@@ -1,8 +1,8 @@
+from neat.strategies.neat.network import Network
+from neat.strategies.neat.genome import Genome
 from neat.strategies.neat.genes import EdgeGene, NodeGene
-from neat.strategies.neat.individual import Individual
 from random import choice
 
-from neat.strategies.neat.genome import Genome
 from neat.strategies.strategy import Strategy
 from itertools import zip_longest
 import copy
@@ -35,48 +35,22 @@ class Neat(Strategy):
         self.input_size = input_shape  # .flatten()
         self.output_size = output_shape  # .flatten()
 
-        self.network = Genome(self.input_size, self.output_size)
+        self.network = Network(self.input_size, self.output_size, relu)
 
         self.population = []
         for _ in range(self.population_size):
-            self.population.append(Individual())
+            self.population.append(Genome(self.network))
 
     def solve_epoch(self, env, epoch_len, discrete):
-        # Randomly mutate the network for some individuals
-        """
-        for individual in self.population:
-            if np.random.choice([True, False], p=[self.p_mutate_weight, 1-self.p_mutate_weight]):
-                individual.mutate()
-
-            if np.random.choice([True, False], p=[self.p_mutate_connection, 1-self.p_mutate_connection]):
-                edge = self.network.mutate_connection()
-                if edge == None:
-                    continue
-                edgeGene = EdgeGene(edge.id, edge, np.random.normal(size=(1,)))
-                individual.add_edge(edgeGene)
-
-            if np.random.choice([True, False], p=[self.p_mutate_node, 1-self.p_mutate_node]):
-                node, edge = self.network.mutate_node()
-                if node == None:
-                    continue
-                nodeGene = NodeGene(node.id, node, bias=0, activation=relu)
-                edgeGene = EdgeGene(edge.id, edge, np.random.normal(size=(1,)))
-                individual.add_edge(edgeGene)
-                individual.add_node(nodeGene)
-
-            self.network.update_dependencies()
-        """
-
         # Evaluate all individuals
         rewards = []
-        for individual in tqdm(self.population):
+        for genome in tqdm(self.population):
             self.network.reset()
-            individual.apply()
+            genome.apply()
             current_reward = 0
             observation = env.reset()
             for _ in range(epoch_len):
-                pred = self.network.foreward(np.array([1, 0, 3, 4]))
-                print(pred)
+                pred = self.network.foreward(observation)
                 if discrete:
                     pred = np.argmax(pred)
 
@@ -87,7 +61,11 @@ class Neat(Strategy):
 
             rewards.append(current_reward)
 
+            genome.mutate()
+
         rewards = np.array(rewards)
+
+        """
         # Crossbreed the best individuals
         # Negative for descending
         idx = np.argsort(-rewards)
@@ -129,8 +107,12 @@ class Neat(Strategy):
             len(self.network.nodes), len(self.network.edges)))
 
         print(self.network.edges)
+        """
+
         return rewards
 
+
+    """
     def crossbreed(self, individual1, individual2):
         child = Individual()
 
@@ -238,6 +220,8 @@ class Neat(Strategy):
                 index2 += 1
 
         return child
+
+    """
 
     def get_best_network(self):
         self.best_network.apply()

@@ -4,22 +4,18 @@ import numpy as np
 
 
 class NodeGene():
-    def __init__(self, id: int, node: Node, bias: float, activation) -> None:
-        self.id = id
+    def __init__(self, node: Node) -> None:
         self.node = node
-        self.bias = bias
-        self.activation = activation
 
-    def apply(self):
-        self.node.activation = self.activation
-        self.node.bias = self.bias
+    def __repr__(self):
+        return "NodeGene: node_id={}".format(self.node.id)
 
 
 class EdgeGene():
-    def __init__(self, id: int, edge: Edge, weight: float) -> None:
-        self.id = id
+    def __init__(self, edge: Edge, weight: float, disabled: bool = False) -> None:
         self.edge = edge
         self.weight = weight
+        self.disabled = disabled
 
     def apply(self):
         self.edge.enabled = True

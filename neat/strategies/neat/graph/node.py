@@ -22,7 +22,6 @@ class Node():
 
         return self.activation(result)
 
-    # @functools.lru_cache(maxsize=300)
     def get_dependencies(self):
         self.required_nodes = []
         for input in self.inputs:

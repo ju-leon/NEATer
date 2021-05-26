@@ -1,87 +1,73 @@
 from neat.strategies.neat.genes import EdgeGene, NodeGene
-from random import choice
-from neat.strategies.neat.graph import node
-from neat.strategies.neat.graph.edge import Edge
+from typing import List
 from neat.strategies.neat.graph.node import InputNode, Node
-import numpy as np
+from neat.strategies.neat.network import Network
+from random import choice
 
 
-def relu(x):
-    return max(0, x)
+def create_hash(start: NodeGene, end: NodeGene) -> str:
+    return "{}->{}".format(start.node.id, end.node.id)
+
+
+def create_edge_hash(edge_gene: EdgeGene) -> str:
+    return "{}->{}".format(edge_gene.edge.input.id, edge_gene.edge.output.id)
 
 
 class Genome():
-    def __init__(self, inputs, outputs) -> None:
-        self.input_nodes = []
-        for i in range(inputs):
-            name = "input_" + str(i)
-            self.input_nodes.append(InputNode(name))
+    def __init__(self, graph: Network) -> None:
+        self.graph = graph
 
-        self.output_nodes = []
-        for i in range(outputs):
-            name = "output_" + str(i)
-            self.output_nodes.append(Node(name, relu))
+        self.input_genes = []
+        for node in graph.input_nodes:
+            self.input_genes.append(NodeGene(node))
 
-        self.nodes = []
-        self.edges = []
+        self.output_genes = []
+        for node in graph.output_nodes:
+            self.output_genes.append(NodeGene(node))
 
-        self.node_conter = 0
-        self.edge_conter = 0
+        self.node_genes = []
+        self.edge_genes = []
 
-    def mutate_connection(self) -> Edge:
-        start = choice(self.nodes + self.input_nodes)
-        end = choice(self.nodes + self.output_nodes)
+    def mutate(self) -> None:
+        start = choice(self.node_genes + self.input_genes)
+        end = choice(self.node_genes + self.output_genes)
+        if start != end and not (end.node.id in start.node.required_nodes):
+            # If a connection that already exists in this genome is selected, mutate a node on this connection
+            edge_gene_ids = [(edge_gene.edge.input.id, edge_gene.edge.output.id)
+                             for edge_gene in self.edge_genes]
+            if (start.node.id, end.node.id) in edge_gene_ids:
+                self.mutate_node_between(
+                    start, end, edge_gene_ids.index((start.node.id, end.node.id)))
+            # Otherwise add this connection
+            else:
+                self.mutate_connection(start, end)
 
-        if (start != end) and not (end.id in start.required_nodes):
-            edge = Edge(self.edge_conter, start, end, 1)
-            self.edge_conter += 1
-            self.edges.append(edge)
+    def mutate_node_between(self, start, end, index) -> None:
+        edge_gene = self.edge_genes[index]
+        del self.edge_genes[index]
 
-            return edge
-        else:
-            return None
+        node, (edge_left, edge_right) = self.graph.register_node_between(
+            start.node, end.node)
 
-    def mutate_node(self):
-        if self.edges != []:
-            edge = choice(self.edges)
+        self.node_genes.append(NodeGene(node))
 
-            new_node = Node(self.node_conter, relu)
-            self.node_conter += 1
-            new_node.layer_hierarchy = edge.input.layer_hierarchy
+        left_gene = EdgeGene(edge_left, weight=1)
+        self.edge_genes.append(left_gene)
 
-            new_edge = Edge(self.edge_conter, edge.input, new_node, 1)
-            self.edge_conter += 1
-            edge.change_input(new_node)
+        right_gene = EdgeGene(edge_right, weight=edge_gene.edge.weight)
+        self.edge_genes.append(right_gene)
 
-            #print("New edges:")
-            # print(new_edge)
-            # print(edge)
+    def mutate_connection(self, start: NodeGene, end: NodeGene) -> None:
+        edge = self.graph.register_edge(start.node, end.node)
 
-            self.nodes.append(new_node)
-            self.edges.append(new_edge)
+        # TODO: How to init weights?
+        edgeGene = EdgeGene(edge, 1)
 
-            return new_node, new_edge
-        else:
-            return None, None
+        self.edge_genes.append(edgeGene)
 
-    def update_dependencies(self):
-        for node in self.output_nodes:
-            node.get_dependencies()
+    def apply(self):
+        for edge_gene in self.edge_genes:
+            edge_gene.apply()
 
-    def reset(self):
-        for edge in self.edges:
-            edge.enabled = False
-
-    def foreward(self, inputs):
-        # Reset cache of all nods before prediction
-        for node in self.nodes + self.output_nodes:
-            node.reset_cache()
-
-        for x in range(len(inputs)):
-            self.input_nodes[x].set_value(inputs[x])
-
-        output = []
-        for node in self.output_nodes:
-            output.append(node.call())
-
-        return np.array(output)
+    def __repr__(self):
+        return "[edge_genes: {}, node_genes: {}]".format([gene.edge.id for gene in self.edge_genes], [gene.node.id for gene in self.node_genes])
