@@ -22,7 +22,7 @@ class Node():
 
         return self.activation(result)
 
-    @functools.lru_cache(maxsize=300)
+    # @functools.lru_cache(maxsize=300)
     def get_dependencies(self):
         self.required_nodes = []
         for input in self.inputs:
@@ -36,7 +36,7 @@ class Node():
         # if self.call.cache_info().hits > 0:
         #    print(self.call.cache_info())
         self.call.cache_clear()
-        self.get_dependencies().clear()
+        # self.get_dependencies().clear()
 
     def __repr__(self) -> str:
         return "[Node {}, required={}]".format(self.id, self.required_nodes)

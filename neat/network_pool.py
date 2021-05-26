@@ -1,6 +1,7 @@
 from numpy.core.defchararray import equal
 import torch
 from tqdm import trange
+import numpy as np
 
 
 class NeatOptimizer():
@@ -15,7 +16,7 @@ class NeatOptimizer():
         for generation in range(max_generations):
             rewards = self.strategy.solve_epoch(environment, epoch_len, discrete)
             print("Generation {}/{}. Best: {}, Average: {}".format(
-                generation, max_generations, torch.max(rewards), torch.mean(rewards)))
+                generation, max_generations, np.max(rewards), np.mean(rewards)))
 
     def fit(self, data, loss=torch.nn.MSELoss(), epochs=10, batch_size=32, validation=None):
         X, Y = data

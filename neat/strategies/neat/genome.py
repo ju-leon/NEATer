@@ -25,14 +25,16 @@ class Genome():
         self.nodes = []
         self.edges = []
 
-        self.counter = 0
+        self.node_conter = 0
+        self.edge_conter = 0
 
     def mutate_connection(self) -> Edge:
         start = choice(self.nodes + self.input_nodes)
         end = choice(self.nodes + self.output_nodes)
 
         if (start != end) and not (end.id in start.required_nodes):
-            edge = Edge(start, end, 1)
+            edge = Edge(self.edge_conter, start, end, 1)
+            self.edge_conter += 1
             self.edges.append(edge)
 
             return edge
@@ -43,10 +45,12 @@ class Genome():
         if self.edges != []:
             edge = choice(self.edges)
 
-            name = "inner_" + str(self.counter)
-            new_node = Node(name, relu)
+            new_node = Node(self.node_conter, relu)
+            self.node_conter += 1
             new_node.layer_hierarchy = edge.input.layer_hierarchy
-            new_edge = Edge(edge.input, new_node, 1)
+
+            new_edge = Edge(self.edge_conter, edge.input, new_node, 1)
+            self.edge_conter += 1
             edge.change_input(new_node)
 
             #print("New edges:")
@@ -55,11 +59,18 @@ class Genome():
 
             self.nodes.append(new_node)
             self.edges.append(new_edge)
-            self.counter += 1
 
             return new_node, new_edge
         else:
             return None, None
+
+    def update_dependencies(self):
+        for node in self.output_nodes:
+            node.get_dependencies()
+
+    def reset(self):
+        for edge in self.edges:
+            edge.enabled = False
 
     def foreward(self, inputs):
         # Reset cache of all nods before prediction
@@ -71,6 +82,6 @@ class Genome():
 
         output = []
         for node in self.output_nodes:
-            output.append(node.call()[0])
+            output.append(node.call())
 
         return np.array(output)

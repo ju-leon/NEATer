@@ -1,14 +1,19 @@
 class Edge():
-    def __init__(self, input, output, weight) -> None:
+    def __init__(self, id, input, output, weight) -> None:
+        self.id = id
         self.input = input
         self.output = output
         self.weight = weight
 
         output.add_connection(self)
+        self.enabled = False
 
     def call(self):
-        out = self.input.call()
-        return out * self.weight
+        if self.enabled:
+            out = self.input.call()
+            return out * self.weight
+        else:
+            return 0
 
     def get_dependencies(self):
         return self.input.get_dependencies()
@@ -17,4 +22,4 @@ class Edge():
         self.input = node
 
     def __repr__(self) -> str:
-        return self.input.id + " -> " + self.output.id
+        return "\n {}=[{} -> {}]".format(self.id, self.input.id, self.output.id)
