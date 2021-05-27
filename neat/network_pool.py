@@ -5,18 +5,22 @@ import numpy as np
 
 
 class NeatOptimizer():
-    def __init__(self, input_shape, output_shape, strategy):
+    def __init__(self, env, input_shape, output_shape, strategy):
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.strategy = strategy
 
-        self.strategy.init_population(input_shape, output_shape)
+        self.strategy.init_population(env, input_shape, output_shape)
 
-    def solve(self, environment, max_generations=10, epoch_len=100, goal='min', discrete=True):
+    def solve(self, max_generations=10, epoch_len=100, goal='min', discrete=True, reward_offset=0):
         for generation in range(max_generations):
-            rewards = self.strategy.solve_epoch(environment, epoch_len, discrete)
-            print("Generation {}/{}. Best: {}, Average: {}".format(
-                generation, max_generations, np.max(rewards), np.mean(rewards)))
+            data = self.strategy.solve_epoch(
+                epoch_len, discrete, reward_offset)
+            print("Generation {}/{}: Best={}, Average={}, Species={}".format(
+                generation, max_generations,
+                np.max(data["rewards"]),
+                np.mean(data["rewards"]),
+                data["num_species"]))
 
     def fit(self, data, loss=torch.nn.MSELoss(), epochs=10, batch_size=32, validation=None):
         X, Y = data

@@ -1,4 +1,3 @@
-from neat.strategies.neat.species import Species
 from neat.strategies.neat.genes import EdgeGene, NodeGene
 from typing import List
 from neat.strategies.neat.graph.node import InputNode, Node
@@ -34,15 +33,16 @@ class Genome():
         self.node_genes = []
         self.edge_genes = []
 
-        self.p_mutate_node = 0.5
-        self.p_mutate_connection = 0.5
-        self.p_mutate_weight_shift = 0.5
-        self.p_mutate_weight_random = 0.5
-        self.p_mutate_toggle_connection = 0.5
+        self.p_mutate_node = 0.01
+        self.p_mutate_connection = 0.1
+        self.p_mutate_weight_shift = 0.3
+        self.p_mutate_weight_random = 0.3
+        self.p_mutate_toggle_connection = 0
 
         self.species = None
+        self.fitness = 0
 
-    def assign_species(self, species: Species) -> None:
+    def assign_species(self, species) -> None:
         self.species = species
 
     def mutate(self) -> None:
@@ -108,6 +108,12 @@ class Genome():
     def apply(self):
         for edge_gene in self.edge_genes:
             edge_gene.apply()
+
+    def __lt__(self, other):
+        """
+        Compare the fitness of two genomes.
+        """
+        return self.fitness < other.fitness
 
     def __repr__(self):
         return "[edge_genes: {}, node_genes: {}]".format([gene.edge.id for gene in self.edge_genes], [gene.node.id for gene in self.node_genes])

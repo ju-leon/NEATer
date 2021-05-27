@@ -1,3 +1,4 @@
+from neat.strategies.neat.species import Species
 from neat.strategies.neat.network import Network
 from neat.strategies.neat.genome import Genome
 from neat.strategies.neat.genes import EdgeGene, NodeGene
@@ -19,63 +20,128 @@ def relu(x):
 
 class Neat(Strategy):
 
-    def __init__(self, population_size=5) -> None:
+    def __init__(self, population_size=5, max_genetic_distance=4.0) -> None:
         self.population_size = population_size
-
-        self.p_mutate_weight = 0.5
-        self.p_mutate_node = 0.5
-        self.p_mutate_connection = 0.8
 
         self.node_innovation_number = 0
         self.edge_innovation_number = 0
 
         self.num_survivors = 10
 
-    def init_population(self, input_shape, output_shape) -> None:
+        self.max_genetic_distance = max_genetic_distance
+
+    def init_population(self, env, input_shape, output_shape) -> None:
+        self.env = env
+
         self.input_size = input_shape  # .flatten()
         self.output_size = output_shape  # .flatten()
 
         self.network = Network(self.input_size, self.output_size, relu)
 
-        self.population = []
+        self.unassigned_genomes = []
+
+        # Start with a single species containing all genomes of the current population
+        self.species = [Species(self.network, env, Genome(self.network))]
         for _ in range(self.population_size):
-            self.population.append(Genome(self.network))
-
-        self.species = []
-
-    def solve_epoch(self, env, epoch_len, discrete):
-        # Evaluate all individuals
-        rewards = []
-        for genome in tqdm(self.population):
-            self.network.reset()
-            genome.apply()
-            current_reward = 0
-            observation = env.reset()
-            for _ in range(epoch_len):
-                pred = self.network.foreward(observation)
-                if discrete:
-                    pred = np.argmax(pred)
-
-                observation, reward, done, info = env.step(pred)
-                current_reward += reward
-                if done:
-                    break
-
-            rewards.append(current_reward)
-
+            genome = Genome(self.network)
             genome.mutate()
 
-        rewards = np.array(rewards)
+            self.species[0].add_genome(genome)
 
-        return rewards
+    def solve_epoch(self, epoch_len, discrete, offset):
+        # Assign all individuals to their species
+        self.assign_species()
+
+        # Evaluate all species
+        rewards = []
+        for species in tqdm(self.species):
+            reward = species.evaluate(epoch_len, discrete, offset)
+            rewards.append(reward)
+
+        self.best_genome = self.species[np.argmax(rewards)].genomes[0]
+
+        self.remove_extinct_species()
+        self.kill_underperformer()
+
+        self.reproduce()
+        self.mutate()
+
+        data = dict()
+
+        data["rewards"] = np.array(rewards)
+        data["num_species"] = len(self.species)
+        return data
+
+    def mutate(self):
+        for species in self.species:
+            species.mutate()
+
+        for genome in self.unassigned_genomes:
+            genome.mutate()
+
+    def reproduce(self, fertility=0.8):
+        number_genomes = len(self.unassigned_genomes)
+        for species in self.species:
+            number_genomes += len(species.genomes)
+
+        allowed_offspring = self.population_size - number_genomes
+
+        # The better a species performs, the more offspring it's allowed to produce
+        self.species.sort()
+        for species in self.species:
+            allowed_offspring /= 2
+            species.reproduce(int(allowed_offspring))
+
+    def kill_underperformer(self, percentage=0.2):
+        for species in self.species:
+            species.kill_percentage(percentage)
+
+    def remove_extinct_species(self, extinction_threshold=1):
+        """
+        Remove all species with fewer genomes than extinction_threshold.
+        #TODO: Keep genomes from extinct species or let them die with the species?
+        """
+        # self.species = [species for species in self.species if len(
+        #    species.genomes) > extinction_threshold]
+
+        surviving_species = []
+        for species in self.species:
+            if len(species.genomes) > extinction_threshold:
+                surviving_species.append(species)
+            else:
+                pass
+                #self.unassigned_genomes += species.genomes
+
+        self.species = surviving_species
+
+        if len(self.species) == 0:
+            print("EXTINCT")
+            # TODO: Response to extinction?
 
     def assign_species(self):
+        genomes = self.unassigned_genomes
         for species in self.species:
-            species.reset()
-        
-        for genome in self.population:
-            
+            genomes = genomes + species.reset()
+
+        for genome in genomes:
+            # If genome is already assigned to a a species do nothing
+            # Should not happend with current architecture
+            if genome.species != None:
+                print("EROROROROROROR?")
+                continue
+
+            assigned = False
+            for species in self.species:
+                distance = species.distance(genome)
+                if distance < self.max_genetic_distance:
+                    species.add_genome(genome)
+                    assigned = True
+                    break
+
+            if not assigned:
+                new_species = Species(self.network, self.env, genome)
+                self.species.append(new_species)
 
     def get_best_network(self):
-        self.best_network.apply()
+        self.best_genome.apply()
         return self.network

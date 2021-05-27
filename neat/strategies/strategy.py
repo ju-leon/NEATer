@@ -7,7 +7,7 @@ class Strategy():
         pass
 
     @abc.abstractmethod
-    def init_population(self, input_shape, output_shape) -> None:
+    def init_population(self, env, input_shape, output_shape) -> None:
         pass
 
     @abc.abstractmethod
