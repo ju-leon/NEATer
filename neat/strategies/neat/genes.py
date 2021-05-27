@@ -20,6 +20,3 @@ class EdgeGene():
     def apply(self):
         self.edge.enabled = True
         self.edge.weight = self.weight
-
-    def mutate(self, scale=1.0):
-        self.weight += np.random.normal(scale=scale)

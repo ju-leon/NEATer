@@ -8,7 +8,15 @@ from random import choice
 class Species():
     def __init__(self, network: Network, genome: Genome):
         self.network = network
-        self.best_genome = genome
+
+        self.genomes = [genome]
+
+    def add_genome(self, genome: Genome) -> None:
+        self.genomes.append(genome)
+
+    def reset(self):
+        head = choice(self.genomes)
+        self.genomes = [head]
 
     def distance(self, genome: Genome, gene_normalize_threshold=20, c1=1, c2=1, c3=1) -> float:
         # Make sure genome1 always has the highest invoation number
@@ -95,3 +103,5 @@ class Species():
         # Add all required nodes
         for node in list(child_nodes):
             child.node_genes.append(NodeGene(node))
+
+        return child
