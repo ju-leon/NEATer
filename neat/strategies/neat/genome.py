@@ -33,10 +33,10 @@ class Genome():
         self.node_genes = []
         self.edge_genes = []
 
-        self.p_mutate_node = 0.01
-        self.p_mutate_connection = 0.1
-        self.p_mutate_weight_shift = 0.3
-        self.p_mutate_weight_random = 0.3
+        self.p_mutate_node = 0.02
+        self.p_mutate_connection = 0.02
+        self.p_mutate_weight_shift = 0.1
+        self.p_mutate_weight_random = 0.1
         self.p_mutate_toggle_connection = 0
 
         self.species = None

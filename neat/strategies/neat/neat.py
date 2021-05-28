@@ -14,13 +14,11 @@ import random
 # TODO: MOVE TO TENSORFLOW ACTIVATION
 
 
-def relu(x):
-    return max(0, x)
-
-
 class Neat(Strategy):
 
-    def __init__(self, population_size=5, max_genetic_distance=4.0) -> None:
+    def __init__(self, activation, population_size=5, max_genetic_distance=4.0) -> None:
+        self.activation = activation
+
         self.population_size = population_size
 
         self.node_innovation_number = 0
@@ -36,7 +34,8 @@ class Neat(Strategy):
         self.input_size = input_shape  # .flatten()
         self.output_size = output_shape  # .flatten()
 
-        self.network = Network(self.input_size, self.output_size, relu)
+        self.network = Network(
+            self.input_size, self.output_size, self.activation)
 
         self.unassigned_genomes = []
 
@@ -48,14 +47,14 @@ class Neat(Strategy):
 
             self.species[0].add_genome(genome)
 
-    def solve_epoch(self, epoch_len, discrete, offset):
+    def solve_epoch(self, epoch_len, discrete, offset, render=False):
         # Assign all individuals to their species
         self.assign_species()
 
         # Evaluate all species
         rewards = []
         for species in tqdm(self.species):
-            reward = species.evaluate(epoch_len, discrete, offset)
+            reward = species.evaluate(epoch_len, discrete, offset, render)
             rewards.append(reward)
 
         self.best_genome = self.species[np.argmax(rewards)].genomes[0]
@@ -70,6 +69,7 @@ class Neat(Strategy):
 
         data["rewards"] = np.array(rewards)
         data["num_species"] = len(self.species)
+
         return data
 
     def mutate(self):

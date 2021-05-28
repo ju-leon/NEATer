@@ -12,10 +12,13 @@ class NeatOptimizer():
 
         self.strategy.init_population(env, input_shape, output_shape)
 
-    def solve(self, max_generations=10, epoch_len=100, goal='min', discrete=True, reward_offset=0):
+    def solve(self, max_generations=10, epoch_len=100, goal='min', discrete=True, reward_offset=0, render=False):
         for generation in range(max_generations):
             data = self.strategy.solve_epoch(
-                epoch_len, discrete, reward_offset)
+                epoch_len, discrete, reward_offset, render)
+
+            self.strategy.network.save_graph("figs/gen_" + str(generation))
+
             print("Generation {}/{}: Best={}, Average={}, Species={}".format(
                 generation, max_generations,
                 np.max(data["rewards"]),

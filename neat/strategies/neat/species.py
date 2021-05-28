@@ -18,7 +18,7 @@ class Species():
     def add_genome(self, genome) -> None:
         self.genomes.append(genome)
 
-    def evaluate(self, epoch_len, discrete=True, offset=0):
+    def evaluate(self, epoch_len, discrete=True, offset=0, render=False):
         """
         Evaluate the fitness of all genomes in the species.
         """
@@ -34,6 +34,8 @@ class Species():
                 pred = self.network.foreward(observation)
                 if discrete:
                     pred = np.argmax(pred)
+                if render:
+                    self.env.render()
 
                 observation, reward, done, info = self.env.step(pred)
                 current_reward += reward

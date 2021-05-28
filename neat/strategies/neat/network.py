@@ -5,6 +5,8 @@ from neat.strategies.neat.graph import node
 from neat.strategies.neat.graph.edge import Edge
 from neat.strategies.neat.graph.node import InputNode, Node
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 def create_hash(start: Node, end: Node) -> str:
@@ -17,6 +19,11 @@ class Network():
         for i in range(inputs):
             name = "input_" + str(i)
             self.input_nodes.append(InputNode(name))
+
+        # Add bias
+        bias = InputNode("input_bias")
+        bias.set_value(1)
+        self.input_nodes.append(bias)
 
         self.output_nodes = []
         for i in range(outputs):
@@ -77,45 +84,6 @@ class Network():
 
         return (new_node, (edge_left, edge_right))
 
-    """
-    TODO: Move to individual
-    def mutate_connection(self) -> Edge:
-        start = choice(self.nodes + self.input_nodes)
-        end = choice(self.nodes + self.output_nodes)
-
-        if (start != end) and not (end.id in start.required_nodes):
-            edge = Edge(self.edge_conter, start, end, 1)
-            self.edge_conter += 1
-            self.edges[create_hash(edge)] = edge
-
-            return edge
-        else:
-            return None
-
-    def mutate_node(self):
-        if self.edges != []:
-            edge = choice(self.edges)
-
-            new_node = Node(self.node_conter, relu)
-            self.node_conter += 1
-            new_node.layer_hierarchy = edge.input.layer_hierarchy
-
-            new_edge = Edge(self.edge_conter, edge.input, new_node, 1)
-            self.edge_conter += 1
-            edge.change_input(new_node)
-
-            #print("New edges:")
-            # print(new_edge)
-            # print(edge)
-
-            self.nodes.append(new_node)
-            self.edges.append(new_edge)
-
-            return new_node, new_edge
-        else:
-            return None, None
-    """
-
     def reset(self):
         for edge in self.edges.values():
             edge.enabled = False
@@ -133,3 +101,46 @@ class Network():
             output.append(node.call())
 
         return np.array(output)
+
+    def save_graph(self, filename):
+        self.update_dependencies()
+
+        checked_nodes = [node.id for node in self.input_nodes]
+        unchecked_nodes = self.nodes + self.output_nodes
+
+        layers = [self.input_nodes]
+        while unchecked_nodes != []:
+            current_layer = []
+            for node in unchecked_nodes:
+                for required in node.required_nodes:
+                    data_available = True
+                    if not (required in checked_nodes):
+                        data_available = False
+                        break
+
+                if data_available:
+                    checked_nodes.append(node.id)
+                    unchecked_nodes.remove(node)
+
+                    current_layer.append(node)
+
+            layers.append(current_layer)
+
+        G = nx.Graph()
+
+        for x in reversed(range(len(layers))):
+            layer = layers[x]
+
+            for node in layer:
+                G.add_node(node.id, layer=x)
+
+        for edge in self.edges.values():
+            G.add_edge(edge.input.id, edge.output.id)
+
+        pos = nx.multipartite_layout(G, subset_key="layer")
+        plt.figure(figsize=(8, 8))
+        nx.draw(G, pos, with_labels=True)
+        plt.axis("equal")
+        plt.savefig(filename + ".png")
+        plt.close()
+        # return layers
