@@ -5,6 +5,11 @@ from neat.strategies.neat.genes import NodeGene
 import numpy as np
 from random import choice
 from gym import Env
+import copy
+
+
+def copy_gene(gene):
+    return copy.copy(gene)
 
 
 class Species():
@@ -14,6 +19,7 @@ class Species():
         self.genomes = [genome]
 
         self.fitness = 0
+        self.fitness_max = 0
 
     def add_genome(self, genome) -> None:
         self.genomes.append(genome)
@@ -23,7 +29,7 @@ class Species():
         Evaluate the fitness of all genomes in the species.
         """
         self.fitness = 0
-
+        self.fitness_max = 0.0
         for genome in self.genomes:
             self.network.reset()
             genome.apply()
@@ -43,11 +49,17 @@ class Species():
                     break
 
             genome.fitness = current_reward
+
+            self.fitness_max = max(self.fitness_max, current_reward)
             self.fitness += current_reward
 
-        self.fitness /= len(self.genomes)
+        self.fitness = self.fitness / len(self.genomes)
         if self.fitness < 0:
             print("\033[93m Warning: Negative rewards are harmful to species performance. Please specify an offset to prevent negative rewards. \033[0m")
+
+        # The best genome always leads the species
+        self.genomes.sort()
+        self.genomes = list(reversed(self.genomes))
 
         return self.fitness
 
@@ -60,6 +72,7 @@ class Species():
                 child = self.crossbreed(parent1, parent2)
 
                 if child != None:
+                    child.mutate()
                     self.genomes.append(child)
 
     def mutate(self):
@@ -87,7 +100,7 @@ class Species():
         self.genomes.sort()
 
         index = int(len(self.genomes) * percentage)
-        self.genomes = self.genomes[index:]
+        self.genomes = list(reversed(self.genomes[index:]))
 
     def distance(self, genome, gene_normalize_threshold=20, c1=1.0, c2=1.0, c3=1.0) -> float:
         best_genome = self.genomes[0]
@@ -154,15 +167,16 @@ class Species():
         index1 = 0
         index2 = 0
         while index1 < len(genome1.edge_genes) and index2 < len(genome2.edge_genes):
+            # TODO: COPY GENES!!!!!!(/!/!/!/!/!/!/!)
             gene1 = genome1.edge_genes[index1]
             gene2 = genome2.edge_genes[index2]
             if gene1.edge.id == gene2.edge.id:
                 if choice([True, False]):
-                    child.edge_genes.append(gene1)
+                    child.edge_genes.append(copy_gene(gene1))
                     child_nodes.add(gene1.edge.input)
                     child_nodes.add(gene1.edge.output)
                 else:
-                    child.edge_genes.append(gene2)
+                    child.edge_genes.append(copy_gene(gene2))
                     child_nodes.add(gene2.edge.input)
                     child_nodes.add(gene2.edge.output)
 
@@ -174,19 +188,23 @@ class Species():
                 index1 += 1
             else:
                 # Disjoint genes of genome2
-                child.edge_genes.append(gene2)
+                child.edge_genes.append(copy_gene(gene2))
                 index2 += 1
 
         # Append excess genes
         while index1 < len(genome1.edge_genes):
-            child.edge_genes.append(genome1.edge_genes[index1])
+            child.edge_genes.append(copy_gene(genome1.edge_genes[index1]))
+
+            child_nodes.add(genome1.edge_genes[index1].edge.input)
+            child_nodes.add(genome1.edge_genes[index1].edge.output)
+
             index1 += 1
 
         # Add all required nodes
         for node in list(child_nodes):
             name = str(node.id)
             if not (name.startswith("input") or name.startswith("output")):
-                child.node_genes.append(NodeGene(node))
+                child.node_genes.append(copy_gene(NodeGene(node)))
 
         return child
 

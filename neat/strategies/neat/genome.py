@@ -4,6 +4,7 @@ from neat.strategies.neat.graph.node import InputNode, Node
 from neat.strategies.neat.network import Network
 from random import choice
 import numpy as np
+import uuid
 
 
 def create_hash(start: NodeGene, end: NodeGene) -> str:
@@ -33,17 +34,13 @@ class Genome():
         self.node_genes = []
         self.edge_genes = []
 
-        self.p_mutate_node = 0.02
-        self.p_mutate_connection = 0.02
-        self.p_mutate_weight_shift = 0.1
+        self.p_mutate_node = 0.2
+        self.p_mutate_connection = 0.5
+        self.p_mutate_weight_shift = 0.7
         self.p_mutate_weight_random = 0.1
         self.p_mutate_toggle_connection = 0
 
-        self.species = None
         self.fitness = 0
-
-    def assign_species(self, species) -> None:
-        self.species = species
 
     def mutate(self) -> None:
         if decide(self.p_mutate_node):
@@ -69,13 +66,16 @@ class Genome():
             node, (edge_left, edge_right) = self.graph.register_node_between(
                 edge_gene.edge.input, edge_gene.edge.output)
 
-            self.node_genes.append(NodeGene(node))
+            if not node.id in [node_gene.node.id for node_gene in self.node_genes]:
+                self.node_genes.append(NodeGene(node))
 
-            left_gene = EdgeGene(edge_left, weight=1)
-            self.edge_genes.append(left_gene)
+            if not edge_left.id in [edge_gene.edge.id for edge_gene in self.edge_genes]:
+                left_gene = EdgeGene(edge_left, weight=1)
+                self.edge_genes.append(left_gene)
 
-            right_gene = EdgeGene(edge_right, weight=edge_gene.edge.weight)
-            self.edge_genes.append(right_gene)
+            if not edge_right.id in [edge_gene.edge.id for edge_gene in self.edge_genes]:
+                right_gene = EdgeGene(edge_right, weight=edge_gene.edge.weight)
+                self.edge_genes.append(right_gene)
 
     def mutate_connection(self, scale=0.8) -> None:
         start = choice(self.node_genes + self.input_genes)
@@ -116,4 +116,5 @@ class Genome():
         return self.fitness < other.fitness
 
     def __repr__(self):
-        return "[edge_genes: {}, node_genes: {}]".format([gene.edge.id for gene in self.edge_genes], [gene.node.id for gene in self.node_genes])
+        return "[Genome: fitness={}]".format(self.fitness)
+        # return "[edge_genes: {}, node_genes: {}]".format([gene.edge.id for gene in self.edge_genes], [gene.node.id for gene in self.node_genes])

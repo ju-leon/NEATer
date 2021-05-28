@@ -8,6 +8,8 @@ class Edge():
         output.add_connection(self)
         self.enabled = False
 
+        self.mutate_to_id = None
+
     def call(self):
         if self.enabled:
             out = self.input.call()

@@ -75,12 +75,26 @@ class Network():
 
         assert hash in self.edges, "Edge does not exist"
 
-        new_node = Node(self.node_innovation, self.activation)
-        self.nodes.append(new_node)
-        self.node_innovation += 1
+        edge = self.edges[hash]
+        if edge.mutate_to_id == None:
+            innovation_number = self.node_innovation
+            edge.mutate_to_id = innovation_number
+            self.node_innovation += 1
 
-        edge_left = self.register_edge(start, new_node)
-        edge_right = self.register_edge(new_node, end)
+            new_node = Node(innovation_number, self.activation)
+            self.nodes.append(new_node)
+
+            edge_left = self.register_edge(start, new_node)
+            edge_right = self.register_edge(new_node, end)
+
+        else:
+            innovation_number = edge.mutate_to_id
+            new_node = self.nodes[innovation_number]
+
+            assert new_node.id == innovation_number, "Nodes should be indexed by innovation number"
+
+            edge_left = self.edges[create_hash(start, new_node)]
+            edge_right = self.edges[create_hash(new_node, end)]
 
         return (new_node, (edge_left, edge_right))
 
@@ -112,8 +126,8 @@ class Network():
         while unchecked_nodes != []:
             current_layer = []
             for node in unchecked_nodes:
+                data_available = True
                 for required in node.required_nodes:
-                    data_available = True
                     if not (required in checked_nodes):
                         data_available = False
                         break

@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import argmax
 from neat.strategies.neat.species import Species
 from neat.strategies.neat.network import Network
 from neat.strategies.neat.genome import Genome
@@ -10,13 +11,14 @@ import copy
 import numpy as np
 from tqdm import tqdm
 import random
+from operator import attrgetter
 
 # TODO: MOVE TO TENSORFLOW ACTIVATION
 
 
 class Neat(Strategy):
 
-    def __init__(self, activation, population_size=5, max_genetic_distance=4.0) -> None:
+    def __init__(self, activation, population_size=5, max_genetic_distance=5.0) -> None:
         self.activation = activation
 
         self.population_size = population_size
@@ -47,9 +49,18 @@ class Neat(Strategy):
 
             self.species[0].add_genome(genome)
 
+        self.best_genome = self.species[0].genomes[0]
+
     def solve_epoch(self, epoch_len, discrete, offset, render=False):
+
         # Assign all individuals to their species
         self.assign_species()
+
+        self.kill_underperformer()
+        self.remove_extinct_species()
+
+        self.reproduce()
+        # self.mutate()
 
         # Evaluate all species
         rewards = []
@@ -57,42 +68,50 @@ class Neat(Strategy):
             reward = species.evaluate(epoch_len, discrete, offset, render)
             rewards.append(reward)
 
-        self.best_genome = self.species[np.argmax(rewards)].genomes[0]
-
-        self.remove_extinct_species()
-        self.kill_underperformer()
-
-        self.reproduce()
-        self.mutate()
+            if species.genomes[0].fitness >= self.best_genome.fitness:
+                self.best_genome = species.genomes[0]
 
         data = dict()
-
         data["rewards"] = np.array(rewards)
         data["num_species"] = len(self.species)
 
         return data
 
     def mutate(self):
+        return
         for species in self.species:
             species.mutate()
 
         for genome in self.unassigned_genomes:
             genome.mutate()
 
-    def reproduce(self, fertility=0.8):
+    def reproduce(self):
         number_genomes = len(self.unassigned_genomes)
         for species in self.species:
             number_genomes += len(species.genomes)
 
         allowed_offspring = self.population_size - number_genomes
 
+        print("Genomes Alive: {}, Allowed Offspring: {}".format(
+            number_genomes, allowed_offspring))
+
+        allowed_offspring = max(0, allowed_offspring)
         # The better a species performs, the more offspring it's allowed to produce
         self.species.sort()
-        for species in self.species:
+        for species in reversed(self.species):
             allowed_offspring /= 2
-            species.reproduce(int(allowed_offspring))
+            print("Best Genome: {}, Population Fitness: {}, Max Fitness: {}, Size: {}, Offspring: {}".format(
+                species.genomes[0].fitness,
+                species.fitness,
+                species.fitness_max,
+                len(species.genomes),
+                allowed_offspring,
+            ))
 
-    def kill_underperformer(self, percentage=0.2):
+            # Allow every species at least one offspring
+            species.reproduce(int(allowed_offspring) + 1)
+
+    def kill_underperformer(self, percentage=0.6):
         for species in self.species:
             species.kill_percentage(percentage)
 
@@ -104,32 +123,36 @@ class Neat(Strategy):
         # self.species = [species for species in self.species if len(
         #    species.genomes) > extinction_threshold]
 
+        unassigned_genomes = []
+
         surviving_species = []
         for species in self.species:
             if len(species.genomes) > extinction_threshold:
                 surviving_species.append(species)
             else:
-                pass
-                #self.unassigned_genomes += species.genomes
-
+                unassigned_genomes += species.genomes
         self.species = surviving_species
+
+        if unassigned_genomes != []:
+            collector_species = Species(
+                self.network, self.env, unassigned_genomes.pop())
+
+            for genome in unassigned_genomes:
+                collector_species.genomes.append(genome)
+
+            self.species.append(collector_species)
 
         if len(self.species) == 0:
             print("EXTINCT")
             # TODO: Response to extinction?
 
     def assign_species(self):
-        genomes = self.unassigned_genomes
+        genomes = []
+
         for species in self.species:
             genomes = genomes + species.reset()
 
         for genome in genomes:
-            # If genome is already assigned to a a species do nothing
-            # Should not happend with current architecture
-            if genome.species != None:
-                print("EROROROROROROR?")
-                continue
-
             assigned = False
             for species in self.species:
                 distance = species.distance(genome)
