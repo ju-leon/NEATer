@@ -10,17 +10,23 @@ class Node():
         self.layer_hierarchy = 0
         self.required_nodes = []
 
+        self.active = False
+        self.bias = 0
+
     def add_connection(self, edge: Edge) -> None:
         self.inputs.append(edge)
 
     @functools.lru_cache(maxsize=300)
     def call(self):
-        result = 0
-        for input in self.inputs:
-            out = input.call()
-            result += out
+        if self.active:
+            result = self.bias
+            for input in self.inputs:
+                out = input.call()
+                result += out
+            return self.activation(result)
 
-        return self.activation(result)
+        else:
+            return 0
 
     def get_dependencies(self):
         self.required_nodes = []

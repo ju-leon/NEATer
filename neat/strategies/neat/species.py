@@ -153,6 +153,9 @@ class Species():
 
         child = Genome(self.network)
 
+        ####
+        # Breed edge genes
+        ####
         # Make sure genome1 always has the highest invoation number
         if genomeA.edge_genes[-1].edge.id < genomeB.edge_genes[-1].edge.id:
             genome1 = genomeB
@@ -161,23 +164,16 @@ class Species():
             genome1 = genomeA
             genome2 = genomeB
 
-        child_nodes = set()
-
         index1 = 0
         index2 = 0
         while index1 < len(genome1.edge_genes) and index2 < len(genome2.edge_genes):
-            # TODO: COPY GENES!!!!!!(/!/!/!/!/!/!/!)
             gene1 = genome1.edge_genes[index1]
             gene2 = genome2.edge_genes[index2]
             if gene1.edge.id == gene2.edge.id:
                 if choice([True, False]):
                     child.edge_genes.append(copy_gene(gene1))
-                    child_nodes.add(gene1.edge.input)
-                    child_nodes.add(gene1.edge.output)
                 else:
                     child.edge_genes.append(copy_gene(gene2))
-                    child_nodes.add(gene2.edge.input)
-                    child_nodes.add(gene2.edge.output)
 
                 index1 += 1
                 index2 += 1
@@ -190,20 +186,54 @@ class Species():
                 child.edge_genes.append(copy_gene(gene2))
                 index2 += 1
 
-        # Append excess genes
+        # Append excess edge genes
         while index1 < len(genome1.edge_genes):
             child.edge_genes.append(copy_gene(genome1.edge_genes[index1]))
 
-            child_nodes.add(genome1.edge_genes[index1].edge.input)
-            child_nodes.add(genome1.edge_genes[index1].edge.output)
-
             index1 += 1
 
-        # Add all required nodes
-        for node in list(child_nodes):
-            name = str(node.id)
-            if not (name.startswith("input") or name.startswith("output")):
-                child.node_genes.append(copy_gene(NodeGene(node)))
+        ####
+        # Breed node genes
+        ####
+        child.output_genes = []
+        for x in range(len(genome1.output_genes)):
+            if choice([True, False]):
+                child.output_genes.append(copy_gene(genome1.output_genes[x]))
+            else:
+                child.output_genes.append(copy_gene(genome2.output_genes[x]))
+
+        node_genes1 = genome1.node_genes
+        node_genes2 = genome2.node_genes
+        index1 = 0
+        index2 = 0
+        while index1 < len(node_genes1) and index2 < len(node_genes2):
+            gene1 = node_genes1[index1]
+            gene2 = node_genes2[index2]
+            if gene1.node.id == gene2.node.id:
+                if choice([True, False]):
+                    child.node_genes.append(copy_gene(gene1))
+                else:
+                    child.node_genes.append(copy_gene(gene2))
+
+                index1 += 1
+                index2 += 1
+            # TODO: Randomly chose if disjoin gene is kept or not
+            elif gene1.node.id < gene2.node.id:
+                # Disjoint genes of genome1
+                index1 += 1
+            else:
+                # Disjoint genes of genome2
+                child.node_genes.append(copy_gene(gene2))
+                index2 += 1
+
+        # Append excess edge genes
+        while index1 < len(node_genes1):
+            child.node_genes.append(copy_gene(node_genes1[index1]))
+            index1 += 1
+
+        while index2 < len(node_genes2):
+            child.node_genes.append(copy_gene(node_genes2[index2]))
+            index2 += 1
 
         return child
 

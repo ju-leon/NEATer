@@ -20,11 +20,6 @@ class Network():
             name = "input_" + str(i)
             self.input_nodes.append(InputNode(name))
 
-        # Add bias
-        bias = InputNode("input_bias")
-        bias.set_value(1)
-        self.input_nodes.append(bias)
-
         self.output_nodes = []
         for i in range(outputs):
             name = "output_" + str(i)
@@ -100,7 +95,10 @@ class Network():
 
     def reset(self):
         for edge in self.edges.values():
-            edge.enabled = False
+            edge.active = False
+
+        for node in self.nodes + self.output_nodes:
+            node.active = False
 
     def foreward(self, inputs):
         # Reset cache of all nods before prediction

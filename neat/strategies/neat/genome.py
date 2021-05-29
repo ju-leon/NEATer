@@ -25,20 +25,21 @@ class Genome():
 
         self.input_genes = []
         for node in graph.input_nodes:
-            self.input_genes.append(NodeGene(node))
+            self.input_genes.append(NodeGene(node, 0))
 
         self.output_genes = []
         for node in graph.output_nodes:
-            self.output_genes.append(NodeGene(node))
+            self.output_genes.append(NodeGene(node, 0))
 
         self.node_genes = []
         self.edge_genes = []
 
-        self.p_mutate_node = 0.2
+        self.p_mutate_node = 0.1
         self.p_mutate_connection = 0.5
         self.p_mutate_weight_shift = 0.7
         self.p_mutate_weight_random = 0.1
-        self.p_mutate_toggle_connection = 0.3
+        self.p_mutate_toggle_connection = 0.5
+        self.p_mutate_bias = 0.5
 
         self.fitness = 0
 
@@ -58,6 +59,9 @@ class Genome():
         if decide(self.p_mutate_toggle_connection):
             self.mutate_toggle_connection()
 
+        if decide(self.p_mutate_bias):
+            self.mutate_bias_shift()
+
     def mutate_node(self) -> None:
         if len(self.edge_genes) > 0:
             edge_gene = choice(self.edge_genes)
@@ -67,7 +71,8 @@ class Genome():
                 edge_gene.edge.input, edge_gene.edge.output)
 
             if not node.id in [node_gene.node.id for node_gene in self.node_genes]:
-                self.node_genes.append(NodeGene(node))
+                # TODO: Make init parameter
+                self.node_genes.append(NodeGene(node, np.random.normal(0, 1)))
 
             if not edge_left.id in [edge_gene.edge.id for edge_gene in self.edge_genes]:
                 left_gene = EdgeGene(edge_left, weight=1)
@@ -105,9 +110,17 @@ class Genome():
             edgeGene = choice(self.edge_genes)
             edgeGene.disabled = not edgeGene.disabled
 
+    def mutate_bias_shift(self, scale=0.5):
+        if len(self.node_genes + self.output_genes) > 0:
+            nodeGene = choice(self.node_genes + self.output_genes)
+            nodeGene.bias = np.random.normal(scale=scale)
+
     def apply(self):
         for edge_gene in self.edge_genes:
             edge_gene.apply()
+
+        for node_gene in self.node_genes + self.output_genes:
+            node_gene.apply()
 
     def __lt__(self, other):
         """
