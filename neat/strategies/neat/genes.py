@@ -18,5 +18,9 @@ class EdgeGene():
         self.disabled = disabled
 
     def apply(self):
-        self.edge.enabled = True
-        self.edge.weight = self.weight
+        if not self.disabled:
+            self.edge.active = True
+            self.edge.weight = self.weight
+        else:
+            self.edge.active = False
+            self.edge.weight = self.weight

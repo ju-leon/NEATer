@@ -38,7 +38,7 @@ class Genome():
         self.p_mutate_connection = 0.5
         self.p_mutate_weight_shift = 0.7
         self.p_mutate_weight_random = 0.1
-        self.p_mutate_toggle_connection = 0
+        self.p_mutate_toggle_connection = 0.3
 
         self.fitness = 0
 

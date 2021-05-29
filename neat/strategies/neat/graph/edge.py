@@ -6,12 +6,12 @@ class Edge():
         self.weight = weight
 
         output.add_connection(self)
-        self.enabled = False
+        self.active = False
 
         self.mutate_to_id = None
 
     def call(self):
-        if self.enabled:
+        if self.active:
             out = self.input.call()
             return out * self.weight
         else:
