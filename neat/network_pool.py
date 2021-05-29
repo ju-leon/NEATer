@@ -1,3 +1,4 @@
+from neat.visualize.plot import Plotter
 from numpy.core.defchararray import equal
 import torch
 from tqdm import trange
@@ -8,16 +9,19 @@ class NeatOptimizer():
     def __init__(self, env, input_shape, output_shape, strategy):
         self.input_shape = input_shape
         self.output_shape = output_shape
-        self.strategy = strategy
 
+        self.strategy = strategy
         self.strategy.init_population(env, input_shape, output_shape)
 
-    def solve(self, max_generations=10, epoch_len=100, goal='min', discrete=True, reward_offset=0, render=False):
+        self.plotter = Plotter(self.strategy.network)
+
+    def solve(self, max_generations=10, epoch_len=100, increase_rate=0, goal='min', discrete=True, reward_offset=0, render=False):
         for generation in range(max_generations):
             data = self.strategy.solve_epoch(
                 epoch_len, discrete, reward_offset, render)
 
-            self.strategy.network.save_graph("figs/gen_" + str(generation))
+            if render:
+                self.plotter.plot()
 
             print("Generation {}/{}: Best={}, Average={}, Species={}".format(
                 generation, max_generations,
@@ -25,10 +29,10 @@ class NeatOptimizer():
                 np.mean(data["rewards"]),
                 data["num_species"]))
 
+            epoch_len += increase_rate
+
     def fit(self, data, loss=torch.nn.MSELoss(), epochs=10, batch_size=32, validation=None):
         X, Y = data
-        #X = torch.FloatTensor(X)
-        #Y = torch.FloatTensor(Y)
 
         if validation == None:
             val_X = val_Y = None

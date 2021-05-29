@@ -34,8 +34,8 @@ class Species():
             self.network.reset()
             genome.apply()
             current_reward = offset
-            observation = self.env.reset()
 
+            observation = self.env.reset()
             for _ in range(epoch_len):
                 pred = self.network.foreward(observation)
                 if discrete:
@@ -72,7 +72,6 @@ class Species():
                 child = self.crossbreed(parent1, parent2)
 
                 if child != None:
-                    child.mutate()
                     self.genomes.append(child)
 
     def mutate(self):

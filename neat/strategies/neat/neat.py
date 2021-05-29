@@ -49,8 +49,6 @@ class Neat(Strategy):
 
             self.species[0].add_genome(genome)
 
-        self.best_genome = self.species[0].genomes[0]
-
     def solve_epoch(self, epoch_len, discrete, offset, render=False):
 
         # Assign all individuals to their species
@@ -60,7 +58,10 @@ class Neat(Strategy):
         self.remove_extinct_species()
 
         self.reproduce()
-        # self.mutate()
+        self.mutate()
+
+        # Reset the best genome every generation. This is important in gyms with randomness
+        self.best_genome = None
 
         # Evaluate all species
         rewards = []
@@ -68,7 +69,7 @@ class Neat(Strategy):
             reward = species.evaluate(epoch_len, discrete, offset, render)
             rewards.append(reward)
 
-            if species.genomes[0].fitness >= self.best_genome.fitness:
+            if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:
                 self.best_genome = species.genomes[0]
 
         data = dict()
@@ -78,7 +79,6 @@ class Neat(Strategy):
         return data
 
     def mutate(self):
-        return
         for species in self.species:
             species.mutate()
 
@@ -166,5 +166,6 @@ class Neat(Strategy):
                 self.species.append(new_species)
 
     def get_best_network(self):
+        self.network.reset()
         self.best_genome.apply()
         return self.network

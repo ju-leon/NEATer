@@ -116,7 +116,7 @@ class Network():
 
         return np.array(output)
 
-    def save_graph(self, filename):
+    def get_graph(self):
         self.update_dependencies()
 
         checked_nodes = [node.id for node in self.input_nodes]
@@ -151,10 +151,4 @@ class Network():
         for edge in self.edges.values():
             G.add_edge(edge.input.id, edge.output.id)
 
-        pos = nx.multipartite_layout(G, subset_key="layer")
-        plt.figure(figsize=(8, 8))
-        nx.draw(G, pos, with_labels=True)
-        plt.axis("equal")
-        plt.savefig(filename + ".png")
-        plt.close()
-        # return layers
+        return G
