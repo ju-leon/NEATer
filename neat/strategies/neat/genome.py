@@ -39,7 +39,8 @@ class Genome():
         self.p_mutate_weight_shift = 0.7
         self.p_mutate_weight_random = 0.1
         self.p_mutate_toggle_connection = 0.5
-        self.p_mutate_bias = 0.5
+        self.p_mutate_bias = 0.1
+        self.p_mutate_toggle_node = 0.1
 
         self.fitness = 0
 
@@ -61,6 +62,9 @@ class Genome():
 
         if decide(self.p_mutate_bias):
             self.mutate_bias_shift()
+
+        if decide(self.p_mutate_toggle_node):
+            self.mutate_disable_node()
 
     def mutate_node(self) -> None:
         if len(self.edge_genes) > 0:
@@ -114,6 +118,11 @@ class Genome():
         if len(self.node_genes + self.output_genes) > 0:
             nodeGene = choice(self.node_genes + self.output_genes)
             nodeGene.bias = np.random.normal(scale=scale)
+
+    def mutate_disable_node(self):
+        if len(self.node_genes) > 0:
+            nodeGene = choice(self.node_genes + self.output_genes)
+            nodeGene.disabled = True
 
     def apply(self):
         for edge_gene in self.edge_genes:
