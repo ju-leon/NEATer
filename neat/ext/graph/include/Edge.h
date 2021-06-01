@@ -31,6 +31,10 @@ public:
     double getWeight() const;
 
     void setWeight(double weight);
+
+    bool isActive() const;
+
+    void setActive(bool active);
 };
 
 #endif

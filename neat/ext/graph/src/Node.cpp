@@ -24,7 +24,7 @@ double Node::call() {
             for (it = connections.begin(); it != connections.end(); it++) {
                 result += (*it)->call();
             }
-            cache = result;
+            cache = clamped(result);
 
         } else {
             cache = 0;
@@ -41,10 +41,11 @@ void Node::addConnection(Edge *edge) {
 
 Node::Node(double bias) {
     Node::bias = bias;
+    Node::cached = false;
 }
 
 Node::Node() {
-
+    Node::cached = false;
 }
 
 

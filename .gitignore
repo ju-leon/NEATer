@@ -141,3 +141,7 @@ cython_debug/
 # Build
 build/
 cmake-build-debug/
+
+# IDE Files
+.idea/
+.vscode/

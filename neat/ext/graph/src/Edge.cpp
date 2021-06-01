@@ -10,8 +10,9 @@ Edge::Edge(Node *in, Node *out) {
     inputNode = in;
     outputNode = out;
 
-
     outputNode->addConnection(this);
+
+    cached = false;
 }
 
 double Edge::call() {
@@ -39,6 +40,14 @@ void Edge::setWeight(double weight) {
 void Edge::reset() {
     cached = false;
     inputNode->reset();
+}
+
+bool Edge::isActive() const {
+    return active;
+}
+
+void Edge::setActive(bool active) {
+    Edge::active = active;
 }
 
 
