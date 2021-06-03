@@ -145,3 +145,4 @@ cmake-build-debug/
 # IDE Files
 .idea/
 .vscode/
+neat/ext/main.cpp
