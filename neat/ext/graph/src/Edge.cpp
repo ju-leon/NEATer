@@ -16,7 +16,7 @@ Edge::Edge(int id, Node *in, Node *out) : id(id) {
 
 double Edge::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
-    int result = 0;
+    double result = 0;
     if (active) {
         result = weight * inputNode->call();
     }

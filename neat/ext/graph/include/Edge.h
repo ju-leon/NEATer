@@ -11,11 +11,11 @@ class Node;
 
 class Edge {
 private:
-    Node *inputNode{};
-    Node *outputNode{};
-    double weight{};
-    bool active{};
-    int id{};
+    Node *inputNode;
+    Node *outputNode;
+    double weight;
+    bool active;
+    int id;
     int mutateToNode = -1;
 public:
     Edge();

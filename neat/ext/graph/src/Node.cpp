@@ -39,6 +39,7 @@ double Node::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
     if (!cached) {
         if (active) {
+
             double result = bias;
             std::list<Edge *>::iterator it;
             for (it = connections.begin(); it != connections.end(); it++) {
@@ -51,6 +52,7 @@ double Node::call() {
         }
         cached = true;
     }
+
 
     return cache;
 }
@@ -106,6 +108,14 @@ void Node::resetDependencyLayer() {
 
 int Node::getDependencyLayer() {
     return dependencyLayer;
+}
+
+double Node::getBias() const {
+    return bias;
+}
+
+void Node::setBias(double bias) {
+    Node::bias = bias;
 }
 
 

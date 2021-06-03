@@ -32,13 +32,15 @@ public:
 
     const std::vector<Node *> &getOutputNodes() const;
 
-    void computeFeedforward();
+    void computeDependencies();
+
+    std::vector<double> forward(std::vector<double> x);
 
 private:
     std::unordered_map<std::pair<int, int>, std::unique_ptr<Edge>, hash_pair> edges;
     std::unordered_map<int, std::unique_ptr<Node>> nodes;
 
-    std::vector<Node *> inputNodes;
+    std::vector<InputNode *> inputNodes;
     std::vector<Node *> outputNodes;
 
 

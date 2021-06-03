@@ -13,11 +13,12 @@ Network::Network(int inputs, int outputs) {
     nodeInnovationNumber = 0;
     for (int i = 0; i < inputs; i++) {
         int id = nodeInnovationNumber++;
-        nodes[id] = std::unique_ptr<Node>(new InputNode(id));
-        inputNodes.emplace_back(&(*nodes[id]));
+        auto *node = new InputNode(id);
+        nodes[id] = std::unique_ptr<Node>(node);
+        inputNodes.push_back(node);
     }
 
-    for (int i = 0; i < inputs; i++) {
+    for (int i = 0; i < outputs; i++) {
         int id = nodeInnovationNumber++;
         nodes[id] = std::make_unique<Node>(id);
         outputNodes.emplace_back(&(*nodes[id]));
@@ -29,7 +30,7 @@ const std::vector<Node *> &Network::getOutputNodes() const {
     return outputNodes;
 }
 
-void Network::computeFeedforward() {
+void Network::computeDependencies() {
     for (auto &it: nodes) {
         it.second->resetDependencyLayer();
     }
@@ -116,4 +117,25 @@ std::tuple<int, int, int> Network::registerNode(int inId, int outId) {
     }
 
     return std::make_tuple(leftEdge->getId(), middleNode->getId(), rightEdge->getId());
+}
+
+std::vector<double> Network::forward(std::vector<double> x) {
+    assert(x.size() == inputNodes.size());
+
+    for (auto &it: nodes) {
+        it.second->resetCache();
+    }
+
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        inputNodes[i]->setValue(x[i]);
+    }
+
+    std::vector<double> result;
+    result.reserve(x.size());
+
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        result.push_back(outputNodes[i]->call());
+    }
+
+    return result;
 }

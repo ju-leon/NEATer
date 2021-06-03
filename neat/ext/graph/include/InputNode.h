@@ -17,7 +17,7 @@ public:
 
     int computeDependencyLayer() override;
 
-    virtual int getDependencyLayer();
+    virtual int getDependencyLayer() override;
 
     void resetCache() override;
 

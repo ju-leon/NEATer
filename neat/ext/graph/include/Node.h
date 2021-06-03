@@ -46,11 +46,9 @@ public:
 
     int getId() const;
 
+    double getBias() const;
 
-    void setBias(double);
-
-    double getBias();
-
+    void setBias(double bias);
 };
 
 #endif

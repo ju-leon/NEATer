@@ -13,9 +13,7 @@ void InputNode::setValue(double x) {
     value = x;
 }
 
-void InputNode::resetCache() {
-    return;
-}
+void InputNode::resetCache() {}
 
 int InputNode::computeDependencyLayer() {
     return 0;
