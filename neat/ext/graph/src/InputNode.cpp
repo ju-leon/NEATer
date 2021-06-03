@@ -13,6 +13,14 @@ void InputNode::setValue(double x) {
     value = x;
 }
 
-void InputNode::reset() {
+void InputNode::resetCache() {
     return;
+}
+
+int InputNode::computeDependencyLayer() {
+    return 0;
+}
+
+int InputNode::getDependencyLayer() {
+    return 0;
 }

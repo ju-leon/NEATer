@@ -9,24 +9,20 @@
 
 class Node;
 
-class Edge
-{
+class Edge {
 private:
-    Node *inputNode;
-    Node *outputNode;
-    double weight;
-    bool active;
-    int id;
-
-    double cache;
-    bool cached;
-
+    Node *inputNode{};
+    Node *outputNode{};
+    double weight{};
+    bool active{};
+    int id{};
+    int mutateToNode = -1;
 public:
-    Edge(Node *, Node *);
+    Edge();
+
+    Edge(int id, Node *, Node *);
 
     double call();
-
-    void reset();
 
     double getWeight() const;
 
@@ -35,6 +31,17 @@ public:
     bool isActive() const;
 
     void setActive(bool active);
+
+    int getId() const;
+
+    void setId(int id);
+
+    int computeDependencyLayer();
+
+    int getMutateToNode() const;
+
+    void setMutateToNode(int mutateToNode);
+
 };
 
 #endif

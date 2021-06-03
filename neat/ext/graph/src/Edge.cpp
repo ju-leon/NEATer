@@ -6,27 +6,22 @@
 #include "../include/Edge.h"
 
 
-Edge::Edge(Node *in, Node *out) {
+Edge::Edge(int id, Node *in, Node *out) : id(id) {
     inputNode = in;
     outputNode = out;
 
-    outputNode->addConnection(this);
-
-    cached = false;
+    weight = 0;
+    active = false;
 }
 
 double Edge::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
-    if (!cached) {
-        if (active) {
-            cache = weight * inputNode->call();
-        } else {
-            cache = 0;
-        }
-        cached = true;
+    int result = 0;
+    if (active) {
+        result = weight * inputNode->call();
     }
 
-    return cache;
+    return result;
 }
 
 double Edge::getWeight() const {
@@ -37,11 +32,6 @@ void Edge::setWeight(double weight) {
     Edge::weight = weight;
 }
 
-void Edge::reset() {
-    cached = false;
-    inputNode->reset();
-}
-
 bool Edge::isActive() const {
     return active;
 }
@@ -49,5 +39,28 @@ bool Edge::isActive() const {
 void Edge::setActive(bool active) {
     Edge::active = active;
 }
+
+int Edge::getId() const {
+    return id;
+}
+
+void Edge::setId(int id) {
+    Edge::id = id;
+}
+
+int Edge::computeDependencyLayer() {
+    return inputNode->computeDependencyLayer() + 1;
+}
+
+int Edge::getMutateToNode() const {
+    return mutateToNode;
+}
+
+void Edge::setMutateToNode(int mutateToNode) {
+    Edge::mutateToNode = mutateToNode;
+}
+
+Edge::Edge() = default;
+
 
 

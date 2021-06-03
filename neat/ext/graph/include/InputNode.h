@@ -7,18 +7,22 @@
 
 #include "Node.h"
 
-class InputNode : public Node
-{
+class InputNode : public Node {
     double value;
 
 public:
-    InputNode() : Node(){};
+    InputNode(int id) : Node{id} {};
 
-    double call();
+    double call() override;
+
+    int computeDependencyLayer() override;
+
+    virtual int getDependencyLayer();
+
+    void resetCache() override;
 
     void setValue(double);
 
-    void reset();
 };
 
 #endif

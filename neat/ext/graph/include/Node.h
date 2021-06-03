@@ -10,8 +10,7 @@
 
 class Edge;
 
-class Node
-{
+class Node {
     std::list<Edge *> connections;
     double bias;
 
@@ -21,14 +20,23 @@ class Node
     double cache;
     bool cached;
 
+    int dependencyLayer = -1;
 public:
     Node();
 
-    Node(double b);
+    Node(int id);
+
+    Node(int id, double bias);
 
     virtual double call();
 
-    virtual void reset();
+    virtual void resetCache();
+
+    virtual int computeDependencyLayer();
+
+    void resetDependencyLayer();
+
+    virtual int getDependencyLayer();
 
     void addConnection(Edge *);
 
@@ -36,9 +44,13 @@ public:
 
     void setActive(bool active);
 
+    int getId() const;
+
+
     void setBias(double);
 
     double getBias();
+
 };
 
 #endif
