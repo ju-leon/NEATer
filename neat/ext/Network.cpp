@@ -5,6 +5,7 @@
 #include "Network.h"
 #include <memory>
 #include <unordered_map>
+
 #include "graph/include/Edge.h"
 
 
@@ -40,7 +41,7 @@ void Network::computeDependencies() {
     }
 }
 
-int Network::registerEdge(int inId, int outId) {
+Edge *Network::registerEdge(int inId, int outId) {
     // Check if Nodes exist
     assert(nodes.find(inId) != nodes.end());
     assert(nodes.find(outId) != nodes.end());
@@ -64,7 +65,7 @@ int Network::registerEdge(int inId, int outId) {
         outputNode->addConnection(&(*edges[key]));
     }
 
-    return edges[key]->getId();
+    return &(*edges[key]);
 }
 
 /**
@@ -77,7 +78,7 @@ int Network::registerEdge(int inId, int outId) {
  * @param outId Id of the output node
  * @return Returns the ids of the newly created nodes and edges: <leftEdge.id, node.id, rightEdge.id>
  */
-std::tuple<int, int, int> Network::registerNode(int inId, int outId) {
+std::tuple<Edge *, Node *, Edge *> Network::registerNode(int inId, int outId) {
     std::pair<int, int> key(inId, outId);
 
     // Make sure the edge to be mutated exists
@@ -116,7 +117,7 @@ std::tuple<int, int, int> Network::registerNode(int inId, int outId) {
         rightEdge = &(*edges[rightKey]);
     }
 
-    return std::make_tuple(leftEdge->getId(), middleNode->getId(), rightEdge->getId());
+    return std::make_tuple(&(*leftEdge), &(*middleNode), &(*rightEdge));
 }
 
 std::vector<double> Network::forward(std::vector<double> x) {
@@ -124,6 +125,10 @@ std::vector<double> Network::forward(std::vector<double> x) {
 
     for (auto &it: nodes) {
         it.second->resetCache();
+    }
+
+    for (auto &it: outputNodes) {
+        it->setActive(true);
     }
 
     for (std::size_t i = 0; i < x.size(); ++i) {

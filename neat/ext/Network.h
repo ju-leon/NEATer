@@ -26,9 +26,9 @@ class Network {
 public:
     Network(int inputs, int outputs);
 
-    int registerEdge(int inId, int outId);
+    Edge *registerEdge(int inId, int outId);
 
-    std::tuple<int, int, int> registerNode(int inId, int outId);
+    std::tuple<Edge *, Node *, Edge *> registerNode(int inId, int outId);
 
     const std::vector<Node *> &getOutputNodes() const;
 

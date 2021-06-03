@@ -1,19 +1,34 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl_bind.h>
+#include <pybind11/stl.h>
 
+#include "Network.h"
 #include "graph/include/Node.h"
 
 namespace py = pybind11;
 
-int add(int i, int j)
-{
-    return i + j;
-}
-
 PYBIND11_MODULE(neatc, m)
 {
     m.doc() = "pybind11 example plugin"; // optional module docstring
-    m.def("add", &add, "A function which adds two numbers");
+
     py::class_<Node>(m, "Node")
-        .def(py::init<double &>())
-        .def("reset", &Node::reset);
+        .def(py::init<int, double>())
+        .def_property("bias", &Node::getBias, &Node::setBias)
+        .def_property("active", &Node::isActive, &Node::setActive)
+        .def("get_layer", &Node::getDependencyLayer)
+        .def("get_id", &Node::getId);
+
+    py::class_<Edge>(m, "Edge")
+        .def(py::init<int, Node *, Node *>())
+        .def_property("weight", &Edge::getWeight, &Edge::setWeight)
+        .def_property("active", &Edge::isActive, &Edge::setActive)
+        .def("get_id", &Edge::getId);
+
+    // Include Network
+    py::class_<Network>(m, "Network")
+        .def(py::init<int, int>())
+        .def("forward", &Network::forward)
+        .def("register_node", &Network::registerNode)
+        .def("register_edge", &Network::registerEdge)
+        .def("compute_dependencies", &Network::computeDependencies);
 }
