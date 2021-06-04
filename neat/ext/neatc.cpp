@@ -22,7 +22,9 @@ PYBIND11_MODULE(neatc, m)
         .def(py::init<int, Node *, Node *>())
         .def_property("weight", &Edge::getWeight, &Edge::setWeight)
         .def_property("active", &Edge::isActive, &Edge::setActive)
-        .def("get_id", &Edge::getId);
+        .def("get_id", &Edge::getId)
+        .def("get_input", &Edge::getInputNode)
+        .def("get_output", &Edge::getOutputNode);
 
     // Include Network
     py::class_<Network>(m, "Network")

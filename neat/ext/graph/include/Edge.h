@@ -42,6 +42,10 @@ public:
 
     void setMutateToNode(int mutateToNode);
 
+    Node *getInputNode() const;
+
+    Node *getOutputNode() const;
+
 };
 
 #endif

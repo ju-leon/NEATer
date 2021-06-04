@@ -60,6 +60,14 @@ void Edge::setMutateToNode(int mutateToNode) {
     Edge::mutateToNode = mutateToNode;
 }
 
+Node *Edge::getInputNode() const {
+    return inputNode;
+}
+
+Node *Edge::getOutputNode() const {
+    return outputNode;
+}
+
 Edge::Edge() = default;
 
 
