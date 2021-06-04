@@ -21,6 +21,7 @@ ext_modules = [
     Pybind11Extension("neatc",
                       [
                           "neat/ext/neatc.cpp",
+                          "neat/ext/Network.cpp",
                           "neat/ext/graph/src/Node.cpp",
                           "neat/ext/graph/src/Edge.cpp",
                           "neat/ext/graph/src/InputNode.cpp"
@@ -28,6 +29,7 @@ ext_modules = [
                       include_dirs=[
                           # Path to pybind11 headers
                           "neat/ext/include",
+                          "neat/ext",
                       ],
                       # Example: passing in the version to the compiled code
                       define_macros=[('VERSION_INFO', __version__)],
