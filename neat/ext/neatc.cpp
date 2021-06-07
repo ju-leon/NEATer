@@ -11,15 +11,15 @@ PYBIND11_MODULE(neatc, m)
 {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    py::class_<Node>(m, "Node")
+    py::class_<Node, std::shared_ptr<Node>>(m, "Node")
         .def(py::init<int, double>())
         .def_property("bias", &Node::getBias, &Node::setBias)
         .def_property("active", &Node::isActive, &Node::setActive)
         .def("get_layer", &Node::getDependencyLayer)
         .def("get_id", &Node::getId);
 
-    py::class_<Edge>(m, "Edge")
-        .def(py::init<int, Node *, Node *>())
+    py::class_<Edge, std::shared_ptr<Edge>>(m, "Edge")
+        .def(py::init<int, std::shared_ptr<Node>, std::shared_ptr<Node>>())
         .def_property("weight", &Edge::getWeight, &Edge::setWeight)
         .def_property("active", &Edge::isActive, &Edge::setActive)
         .def("get_id", &Edge::getId)
@@ -27,7 +27,7 @@ PYBIND11_MODULE(neatc, m)
         .def("get_output", &Edge::getOutputNode);
 
     // Include Network
-    py::class_<Network>(m, "Network")
+    py::class_<Network, std::shared_ptr<Network>>(m, "Network")
         .def(py::init<int, int>())
         .def("forward", &Network::forward)
         .def("register_node", &Network::registerNode)

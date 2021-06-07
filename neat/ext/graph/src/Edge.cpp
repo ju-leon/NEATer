@@ -5,8 +5,7 @@
 #include <iostream>
 #include "../include/Edge.h"
 
-
-Edge::Edge(int id, Node *in, Node *out) : id(id) {
+Edge::Edge(int id, std::shared_ptr<Node> in, std::shared_ptr<Node> out) : id(id) {
     inputNode = in;
     outputNode = out;
 
@@ -60,15 +59,21 @@ void Edge::setMutateToNode(int mutateToNode) {
     Edge::mutateToNode = mutateToNode;
 }
 
-Node *Edge::getInputNode() const {
+const std::shared_ptr<Node> &Edge::getInputNode() const {
     return inputNode;
 }
 
-Node *Edge::getOutputNode() const {
+const std::shared_ptr<Node> &Edge::getOutputNode() const {
     return outputNode;
 }
 
 Edge::Edge() = default;
+
+std::ostream &operator<<(std::ostream &os, const Edge &edge) {
+    os << "inputNode: " << edge.inputNode << " outputNode: " << edge.outputNode << " weight: " << edge.weight
+       << " active: " << edge.active << " id: " << edge.id << " mutateToNode: " << edge.mutateToNode;
+    return os;
+}
 
 
 

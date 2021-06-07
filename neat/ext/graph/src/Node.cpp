@@ -41,7 +41,7 @@ double Node::call() {
         if (active) {
 
             double result = bias;
-            std::list<Edge *>::iterator it;
+            std::list<std::shared_ptr<Edge>>::iterator it;
             for (it = connections.begin(); it != connections.end(); it++) {
                 result += (*it)->call();
             }
@@ -57,7 +57,7 @@ double Node::call() {
     return cache;
 }
 
-void Node::addConnection(Edge *edge) {
+void Node::addConnection(std::shared_ptr<Edge> edge) {
     connections.push_back(edge);
 }
 
@@ -90,7 +90,7 @@ int Node::getId() const {
  * @return Layer of node. -1 if the node has no connections.
  */
 int Node::computeDependencyLayer() {
-    std::list<Edge *>::iterator it;
+    std::list<std::shared_ptr<Edge>>::iterator it;
     if (dependencyLayer == -1) {
         for (it = connections.begin(); it != connections.end(); it++) {
             int layer = (*it)->computeDependencyLayer();
@@ -118,5 +118,8 @@ void Node::setBias(double bias) {
     Node::bias = bias;
 }
 
-
-
+std::ostream &operator<<(std::ostream &os, const Node &node) {
+    os << "bias: " << node.bias << " active: " << node.active << " id: " << node.id << " cache: " << node.cache
+       << " cached: " << node.cached << " dependencyLayer: " << node.dependencyLayer;
+    return os;
+}

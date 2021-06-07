@@ -5,14 +5,15 @@
 #ifndef NEATC_EDGE_H
 #define NEATC_EDGE_H
 
+#include <ostream>
 #include "Node.h"
 
 class Node;
 
 class Edge {
 private:
-    Node *inputNode;
-    Node *outputNode;
+    std::shared_ptr<Node> inputNode;
+    std::shared_ptr<Node> outputNode;
     double weight;
     bool active;
     int id;
@@ -20,7 +21,7 @@ private:
 public:
     Edge();
 
-    Edge(int id, Node *, Node *);
+    Edge(int id, std::shared_ptr<Node>, std::shared_ptr<Node>);
 
     double call();
 
@@ -42,9 +43,11 @@ public:
 
     void setMutateToNode(int mutateToNode);
 
-    Node *getInputNode() const;
+    const std::shared_ptr<Node> &getInputNode() const;
 
-    Node *getOutputNode() const;
+    const std::shared_ptr<Node> &getOutputNode() const;
+
+    friend std::ostream &operator<<(std::ostream &os, const Edge &edge);
 
 };
 

@@ -6,12 +6,13 @@
 #define NEATC_NODE_H
 
 #include <list>
+#include <ostream>
 #include "Edge.h"
 
 class Edge;
 
 class Node {
-    std::list<Edge *> connections;
+    std::list<std::shared_ptr<Edge>> connections;
     double bias;
 
     bool active;
@@ -38,7 +39,7 @@ public:
 
     virtual int getDependencyLayer();
 
-    void addConnection(Edge *);
+    void addConnection(std::shared_ptr<Edge> edge);
 
     bool isActive() const;
 
@@ -49,6 +50,9 @@ public:
     double getBias() const;
 
     void setBias(double bias);
+
+    friend std::ostream &operator<<(std::ostream &os, const Node &node);
+
 };
 
 #endif

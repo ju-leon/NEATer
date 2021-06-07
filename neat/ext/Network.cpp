@@ -14,20 +14,20 @@ Network::Network(int inputs, int outputs) {
     nodeInnovationNumber = 0;
     for (int i = 0; i < inputs; i++) {
         int id = nodeInnovationNumber++;
-        auto *node = new InputNode(id);
-        nodes[id] = std::unique_ptr<Node>(node);
-        inputNodes.push_back(node);
+        std::shared_ptr<Node> node = std::make_shared<InputNode>(id);
+        nodes[id] = node;
+        inputNodes.push_back(std::static_pointer_cast<InputNode>(node));
     }
 
     for (int i = 0; i < outputs; i++) {
         int id = nodeInnovationNumber++;
         nodes[id] = std::make_unique<Node>(id);
-        outputNodes.emplace_back(&(*nodes[id]));
+        outputNodes.emplace_back(nodes[id]);
     }
 
 }
 
-const std::vector<Node *> &Network::getOutputNodes() const {
+const std::vector<std::shared_ptr<Node>> &Network::getOutputNodes() const {
     return outputNodes;
 }
 
@@ -41,31 +41,39 @@ void Network::computeDependencies() {
     }
 }
 
-Edge *Network::registerEdge(int inId, int outId) {
+std::shared_ptr<Edge> Network::registerEdge(int inId, int outId) {
     // Check if Nodes exist
     assert(nodes.find(inId) != nodes.end());
     assert(nodes.find(outId) != nodes.end());
 
     //Check if output node is not a input node
-    assert(nodes.find(outId)->second->getDependencyLayer() != 0);
+    if (nodes.find(outId)->second->getDependencyLayer() == 0) {
+        return nullptr;
+    }
 
     //Check if the edge is a forward edge
-    assert(nodes.find(inId)->second->getDependencyLayer() < nodes.find(outId)->second->getDependencyLayer() ||
-           nodes.find(outId)->second->getDependencyLayer() == -1);
+    if (nodes.find(inId)->second->getDependencyLayer() > nodes.find(outId)->second->getDependencyLayer() &&
+        nodes.find(outId)->second->getDependencyLayer() != -1) {
+        return nullptr;
+    }
 
+    // Prevent loops
+    if (inId == outId) {
+        return nullptr;
+    }
 
-    Node *inputNode = &(*nodes[inId]);
-    Node *outputNode = &(*nodes[outId]);
+    std::shared_ptr<Node> inputNode = nodes[inId];
+    std::shared_ptr<Node> outputNode = nodes[outId];
     std::pair<int, int> key(inId, outId);
 
 
     // If Edge does not yet exist, create a new edge. Otherwise, return original edge.
     if (edges.find(key) == edges.end()) {
-        edges[key] = std::make_unique<Edge>(edgeInnovationNumber++, inputNode, outputNode);
-        outputNode->addConnection(&(*edges[key]));
+        edges[key] = std::make_shared<Edge>(edgeInnovationNumber++, inputNode, outputNode);
+        outputNode->addConnection(edges[key]);
     }
 
-    return &(*edges[key]);
+    return edges[key];
 }
 
 /**
@@ -78,46 +86,47 @@ Edge *Network::registerEdge(int inId, int outId) {
  * @param outId Id of the output node
  * @return Returns the ids of the newly created nodes and edges: <leftEdge.id, node.id, rightEdge.id>
  */
-std::tuple<Edge *, Node *, Edge *> Network::registerNode(int inId, int outId) {
+std::tuple<std::shared_ptr<Edge>, std::shared_ptr<Node>, std::shared_ptr<Edge>>
+Network::registerNode(int inId, int outId) {
     std::pair<int, int> key(inId, outId);
 
     // Make sure the edge to be mutated exists
     assert(edges.find(key) != edges.end());
 
-    Edge *edge = &(*edges.find(key)->second);
+    std::shared_ptr<Edge> edge = edges.find(key)->second;
 
-    Node *middleNode;
-    Edge *leftEdge;
-    Edge *rightEdge;
+    std::shared_ptr<Node> middleNode;
+    std::shared_ptr<Edge> leftEdge;
+    std::shared_ptr<Edge> rightEdge;
     if (edge->getMutateToNode() == -1) {
         int id = nodeInnovationNumber++;
         nodes[id] = std::make_unique<Node>(id);
-        middleNode = &(*nodes[id]);
+        middleNode = nodes[id];
 
         std::pair<int, int> leftKey(inId, middleNode->getId());
-        edges[leftKey] = std::make_unique<Edge>(edgeInnovationNumber++, &(*nodes[inId]), middleNode);
-        leftEdge = &(*edges[leftKey]);
+        edges[leftKey] = std::make_shared<Edge>(edgeInnovationNumber++, nodes[inId], middleNode);
+        leftEdge = edges[leftKey];
 
         middleNode->addConnection(leftEdge);
 
         std::pair<int, int> rightKey(middleNode->getId(), outId);
-        edges[rightKey] = std::make_unique<Edge>(edgeInnovationNumber++, middleNode, &(*nodes[outId]));
-        rightEdge = &(*edges[rightKey]);
+        edges[rightKey] = std::make_shared<Edge>(edgeInnovationNumber++, middleNode, nodes[outId]);
+        rightEdge = edges[rightKey];
 
-        (&(*nodes[outId]))->addConnection(rightEdge);
+        nodes[outId]->addConnection(rightEdge);
 
         edge->setMutateToNode(middleNode->getId());
     } else {
-        middleNode = &(*nodes[edge->getMutateToNode()]);
+        middleNode = nodes[edge->getMutateToNode()];
 
         std::pair<int, int> leftKey(inId, middleNode->getId());
-        leftEdge = &(*edges[leftKey]);
+        leftEdge = edges[leftKey];
 
         std::pair<int, int> rightKey(middleNode->getId(), outId);
-        rightEdge = &(*edges[rightKey]);
+        rightEdge = edges[rightKey];
     }
 
-    return std::make_tuple(&(*leftEdge), &(*middleNode), &(*rightEdge));
+    return std::make_tuple(leftEdge, middleNode, rightEdge);
 }
 
 std::vector<double> Network::forward(std::vector<double> x) {
