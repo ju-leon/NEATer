@@ -1,0 +1,7 @@
+numpy==1.19.5
+neat==0.0.1
+tqdm==4.59.0
+networkx==2.5
+torch==1.8.1
+matplotlib==3.3.4
+gym==0.18.3
