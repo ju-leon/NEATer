@@ -41,14 +41,13 @@ class CNetworkTest(unittest.TestCase):
         self.assertIsNone(net.register_edge(3, 0))
         self.assertIsNone(net.register_edge(0, 0))
         self.assertIsNone(net.register_edge(5, 5))
-        self.assertIsNone(net.register_edge(-1, 39))
 
     def test_register_node(self):
         net = Network(2, 2)
         edge = net.register_edge(1, 2)
         edgeLeft, nodeMiddle, edgeRight = net.register_node(1, 2)
-        self.assertEqual(edgeLeft.get_output() == nodeMiddle)
-        self.assertEqual(edgeRight.get_input() == nodeMiddle)
+        self.assertEqual(edgeLeft.get_output(), nodeMiddle)
+        self.assertEqual(edgeRight.get_input(), nodeMiddle)
 
         net.compute_dependencies()
 
