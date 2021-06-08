@@ -47,6 +47,8 @@ private:
     int nodeInnovationNumber;
     int edgeInnovationNumber;
 
+    
+
 
 };
 
