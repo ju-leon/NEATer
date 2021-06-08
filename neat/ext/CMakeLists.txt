@@ -3,4 +3,4 @@ project(neatc)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(neatc main.cpp graph/src/Node.cpp graph/include/Node.h graph/src/Edge.cpp graph/include/Edge.h graph/src/InputNode.cpp graph/include/InputNode.h main.cpp Network.cpp Network.h)
+add_executable(neatc main.cpp network/graph/src/Node.cpp network/graph/include/Node.h network/graph/src/Edge.cpp network/graph/include/Edge.h network/graph/src/InputNode.cpp network/graph/include/InputNode.h main.cpp network/Network.cpp network/Network.h Species.cpp Species.h)

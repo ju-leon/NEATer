@@ -3,7 +3,7 @@
 #include <pybind11/stl.h>
 #include <memory>
 
-#include "Network.h"
+#include "network/Network.h"
 #include "graph/include/Node.h"
 
 namespace py = pybind11;
