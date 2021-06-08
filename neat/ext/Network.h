@@ -30,11 +30,15 @@ public:
 
     std::tuple<std::shared_ptr<Edge>, std::shared_ptr<Node>, std::shared_ptr<Edge>> registerNode(int inId, int outId);
 
-    const std::vector<std::shared_ptr<Node>> & getOutputNodes() const;
-
     void computeDependencies();
 
     std::vector<double> forward(std::vector<double> x);
+
+    const std::vector<std::shared_ptr<Node>> &getOutputNodes() const;
+
+    const std::vector<std::shared_ptr<InputNode>> &getInputNodes() const;
+
+    void reset();
 
 private:
     std::unordered_map<std::pair<int, int>, std::shared_ptr<Edge>, hash_pair> edges;
@@ -46,8 +50,6 @@ private:
 
     int nodeInnovationNumber;
     int edgeInnovationNumber;
-
-    
 
 
 };

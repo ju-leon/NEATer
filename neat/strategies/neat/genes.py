@@ -1,5 +1,5 @@
-from neat.strategies.neat.graph.edge import Edge
-from neat.strategies.neat.graph.node import Node
+from _neat import Edge
+from _neat import Node
 import numpy as np
 
 

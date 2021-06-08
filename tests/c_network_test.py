@@ -1,6 +1,6 @@
 import unittest
 
-from neatc import Network, Node, Edge
+from _neat import Network, Node, Edge
 
 
 class CNetworkTest(unittest.TestCase):
@@ -25,7 +25,7 @@ class CNetworkTest(unittest.TestCase):
         self.assertEqual(edge.active, False)
 
     def test_register_edge(self):
-        net = Network(3, 5)
+        net = Network(3, 3)
         edge = net.register_edge(0, 3)
         edge.active = True
         edge.weight = 1
@@ -44,6 +44,11 @@ class CNetworkTest(unittest.TestCase):
 
     def test_register_node(self):
         net = Network(2, 2)
+        edge_left, node, edge_right = net.register_node(0, 3)
+        self.assertIsNone(edge_left)
+        self.assertIsNone(node)
+        self.assertIsNone(edge_right)
+
         edge = net.register_edge(1, 2)
         edgeLeft, nodeMiddle, edgeRight = net.register_node(1, 2)
         self.assertEqual(edgeLeft.get_output(), nodeMiddle)
@@ -55,6 +60,44 @@ class CNetworkTest(unittest.TestCase):
 
         edge = net.register_edge(nodeMiddle.get_id(), 3)
         self.assertEqual(edge, net.register_edge(nodeMiddle.get_id(), 3))
+
+    def test_forward(self):
+        net = Network(2, 4)
+
+        edge1 = net.register_edge(0, 2)
+        edge2 = net.register_edge(1, 3)
+
+        self.assertEqual(net.forward([1, 1]), [0, 0, 0, 0])
+
+        edge1.active = True
+        edge1.weight = 1
+        self.assertEqual(net.forward([1, 1]), [1, 0, 0, 0])
+
+        edge2.active = True
+        edge2.weight = 1
+        self.assertEqual(net.forward([1, 1]), [1, 1, 0, 0])
+        self.assertEqual(net.forward([1, -1]), [1, -1, 0, 0])
+        self.assertEqual(net.forward([1, 0.5]), [1, 0.5, 0, 0])
+
+        edge2.weight = 0.1
+        self.assertEqual(net.forward([1, 1]), [1, 0.1, 0, 0])
+
+        edgeLeft, nodeMiddle, edgeRight = net.register_node(1, 3)
+        edgeLeft.active = True
+        edgeLeft.weight = 1
+
+        edgeRight.active = False
+        edgeRight.weight = 1
+
+        nodeMiddle.active = True
+
+        self.assertEqual(net.forward([1, 1]), [1, 0.1, 0, 0])
+
+        edgeInternal = net.register_edge(nodeMiddle.get_id(), 4)
+        edgeInternal.active = True
+        edgeInternal.weight = 1
+
+        self.assertEqual(net.forward([1, 1]), [1, 0.1, 1, 0])
 
 
 if "__main__" == __name__:

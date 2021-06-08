@@ -18,9 +18,9 @@ __version__ = "0.0.1"
 #   reproducible builds (https://github.com/pybind/python_example/pull/53)
 
 ext_modules = [
-    Pybind11Extension("neatc",
+    Pybind11Extension("_neat",
                       [
-                          "neat/ext/neatc.cpp",
+                          "neat/ext/ext.cpp",
                           "neat/ext/Network.cpp",
                           "neat/ext/graph/src/Node.cpp",
                           "neat/ext/graph/src/Edge.cpp",
@@ -28,8 +28,8 @@ ext_modules = [
                       ],
                       include_dirs=[
                           # Path to pybind11 headers
-                          "neat/ext/include",
                           "neat/ext",
+                          "neat/ext/include",
                       ],
                       # Example: passing in the version to the compiled code
                       define_macros=[('VERSION_INFO', __version__)],

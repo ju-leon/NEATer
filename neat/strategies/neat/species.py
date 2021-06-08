@@ -1,5 +1,5 @@
 from typing import List
-from neat.strategies.neat.network import Network
+from _neat import Network
 from neat.strategies.neat.genome import Genome
 from neat.strategies.neat.genes import NodeGene
 import numpy as np
@@ -37,7 +37,7 @@ class Species():
 
             observation = self.env.reset()
             for _ in range(epoch_len):
-                pred = self.network.foreward(observation)
+                pred = self.network.forward(observation)
                 if discrete:
                     pred = np.argmax(pred)
                 if render:
@@ -108,7 +108,7 @@ class Species():
             return 1.0
 
         # Make sure genome1 always has the highest invoation number
-        if genome.edge_genes[-1].edge.id < best_genome.edge_genes[-1].edge.id:
+        if genome.edge_genes[-1].edge.get_id() < best_genome.edge_genes[-1].edge.get_id():
             genome1 = best_genome
             genome2 = genome
         else:
@@ -124,12 +124,12 @@ class Species():
         while index1 < len(genome1.edge_genes) and index2 < len(genome2.edge_genes):
             gene1 = genome1.edge_genes[index1]
             gene2 = genome2.edge_genes[index2]
-            if gene1.edge.id == gene2.edge.id:
+            if gene1.edge.get_id() == gene2.edge.get_id():
                 weight_diff += np.abs(gene1.weight - gene2.weight)
                 num_similar += 1
                 index1 += 1
                 index2 += 1
-            elif gene1.edge.id < gene2.edge.id:
+            elif gene1.edge.get_id() < gene2.edge.get_id():
                 num_disjoint += 1
                 index1 += 1
             else:
@@ -157,7 +157,7 @@ class Species():
         # Breed edge genes
         ####
         # Make sure genome1 always has the highest invoation number
-        if genomeA.edge_genes[-1].edge.id < genomeB.edge_genes[-1].edge.id:
+        if genomeA.edge_genes[-1].edge.get_id() < genomeB.edge_genes[-1].edge.get_id():
             genome1 = genomeB
             genome2 = genomeA
         else:
@@ -169,7 +169,7 @@ class Species():
         while index1 < len(genome1.edge_genes) and index2 < len(genome2.edge_genes):
             gene1 = genome1.edge_genes[index1]
             gene2 = genome2.edge_genes[index2]
-            if gene1.edge.id == gene2.edge.id:
+            if gene1.edge.get_id() == gene2.edge.get_id():
                 if choice([True, False]):
                     child.edge_genes.append(copy_gene(gene1))
                 else:
@@ -178,7 +178,7 @@ class Species():
                 index1 += 1
                 index2 += 1
             # TODO: Randomly chose if disjoin gene is kept or not
-            elif gene1.edge.id < gene2.edge.id:
+            elif gene1.edge.get_id() < gene2.edge.get_id():
                 # Disjoint genes of genome1
                 index1 += 1
             else:
@@ -209,7 +209,7 @@ class Species():
         while index1 < len(node_genes1) and index2 < len(node_genes2):
             gene1 = node_genes1[index1]
             gene2 = node_genes2[index2]
-            if gene1.node.id == gene2.node.id:
+            if gene1.node.get_id() == gene2.node.get_id():
                 if choice([True, False]):
                     child.node_genes.append(copy_gene(gene1))
                 else:
@@ -218,7 +218,7 @@ class Species():
                 index1 += 1
                 index2 += 1
             # TODO: Randomly chose if disjoin gene is kept or not
-            elif gene1.node.id < gene2.node.id:
+            elif gene1.node.get_id() < gene2.node.get_id():
                 # Disjoint genes of genome1
                 index1 += 1
             else:

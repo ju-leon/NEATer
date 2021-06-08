@@ -1,18 +1,20 @@
-from neat.strategies.neat.genes import EdgeGene, NodeGene
-from typing import List
-from neat.strategies.neat.graph.node import InputNode, Node
-from neat.strategies.neat.network import Network
-from random import choice
+from _neat import InputNode, Node
+from _neat import Network
+
 import numpy as np
 import uuid
+from random import choice
+from typing import List
+
+from neat.strategies.neat.genes import EdgeGene, NodeGene
 
 
 def create_hash(start: NodeGene, end: NodeGene) -> str:
-    return "{}->{}".format(start.node.id, end.node.id)
+    return "{}->{}".format(start.node.get_id(), end.node.get_id())
 
 
 def create_edge_hash(edge_gene: EdgeGene) -> str:
-    return "{}->{}".format(edge_gene.edge.input.id, edge_gene.edge.output.id)
+    return "{}->{}".format(edge_gene.edge.input.get_id(), edge_gene.edge.output.get_id())
 
 
 def decide(probability: float) -> bool:
@@ -24,11 +26,11 @@ class Genome():
         self.graph = graph
 
         self.input_genes = []
-        for node in graph.input_nodes:
+        for node in graph.get_input_nodes():
             self.input_genes.append(NodeGene(node, 0))
 
         self.output_genes = []
-        for node in graph.output_nodes:
+        for node in graph.get_output_nodes():
             self.output_genes.append(NodeGene(node, 0))
 
         self.node_genes = []
@@ -71,18 +73,23 @@ class Genome():
             edge_gene = choice(self.edge_genes)
             self.edge_genes.remove(edge_gene)
 
-            node, (edge_left, edge_right) = self.graph.register_node_between(
-                edge_gene.edge.input, edge_gene.edge.output)
+            edge_left, node, edge_right = self.graph.register_node(
+                edge_gene.edge.get_input().get_id(), edge_gene.edge.get_output().get_id())
 
-            if not node.id in [node_gene.node.id for node_gene in self.node_genes]:
+            # Abort if the edge selected does not exist
+            if edge_left == None:
+                print("SELECTED ILLEGAL EDGE")
+                return
+
+            if not node.get_id() in [node_gene.node.get_id() for node_gene in self.node_genes]:
                 # TODO: Make init parameter
                 self.node_genes.append(NodeGene(node, np.random.normal(0, 1)))
 
-            if not edge_left.id in [edge_gene.edge.id for edge_gene in self.edge_genes]:
+            if not edge_left.get_id() in [edge_gene.edge.get_id() for edge_gene in self.edge_genes]:
                 left_gene = EdgeGene(edge_left, weight=1)
                 self.edge_genes.append(left_gene)
 
-            if not edge_right.id in [edge_gene.edge.id for edge_gene in self.edge_genes]:
+            if not edge_right.get_id() in [edge_gene.edge.get_id() for edge_gene in self.edge_genes]:
                 right_gene = EdgeGene(edge_right, weight=edge_gene.edge.weight)
                 self.edge_genes.append(right_gene)
 
@@ -90,10 +97,10 @@ class Genome():
         start = choice(self.node_genes + self.input_genes)
         end = choice(self.node_genes + self.output_genes)
 
-        # Only mutate connection if it does not create a cycle
-        if start != end and not (end.node.id in start.node.required_nodes):
-            edge = self.graph.register_edge(start.node, end.node)
+        edge = self.graph.register_edge(start.node.get_id(), end.node.get_id())
 
+        # Only mutate connection if it does not create a cycle
+        if edge != None:
             # TODO: How to init weights?
             edgeGene = EdgeGene(edge, weight=np.random.normal(scale=scale))
 

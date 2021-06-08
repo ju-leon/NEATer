@@ -1,6 +1,6 @@
 from numpy.core.fromnumeric import argmax
 from neat.strategies.neat.species import Species
-from neat.strategies.neat.network import Network
+from _neat import Network
 from neat.strategies.neat.genome import Genome
 from neat.strategies.neat.genes import EdgeGene, NodeGene
 from random import choice
@@ -37,7 +37,7 @@ class Neat(Strategy):
         self.output_size = output_shape  # .flatten()
 
         self.network = Network(
-            self.input_size, self.output_size, self.activation)
+            self.input_size, self.output_size)  # TODO: Pass AF, self.activation)
 
         self.unassigned_genomes = []
 

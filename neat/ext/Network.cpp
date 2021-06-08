@@ -91,7 +91,9 @@ Network::registerNode(int inId, int outId) {
     std::pair<int, int> key(inId, outId);
 
     // Make sure the edge to be mutated exists
-    assert(edges.find(key) != edges.end());
+    if (edges.find(key) == edges.end()) {
+        return std::make_tuple(nullptr, nullptr, nullptr);
+    }
 
     std::shared_ptr<Edge> edge = edges.find(key)->second;
 
@@ -145,11 +147,25 @@ std::vector<double> Network::forward(std::vector<double> x) {
     }
 
     std::vector<double> result;
-    result.reserve(x.size());
+    result.reserve(outputNodes.size());
 
-    for (std::size_t i = 0; i < x.size(); ++i) {
+    for (std::size_t i = 0; i < outputNodes.size(); ++i) {
         result.push_back(outputNodes[i]->call());
     }
 
     return result;
+}
+
+const std::vector<std::shared_ptr<InputNode>> &Network::getInputNodes() const {
+    return inputNodes;
+}
+
+void Network::reset() {
+    for (auto &it: nodes) {
+        it.second->setActive(false);
+    }
+
+    for (auto &it: edges) {
+        it.second->setActive(false);
+    }
 }
