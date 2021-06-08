@@ -5,6 +5,7 @@
 #include "Network.h"
 #include <memory>
 #include <unordered_map>
+#include <cassert>
 
 #include "graph/include/Edge.h"
 
