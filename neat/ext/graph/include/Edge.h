@@ -6,6 +6,8 @@
 #define NEATC_EDGE_H
 
 #include <ostream>
+#include <memory>
+
 #include "Node.h"
 
 class Node;

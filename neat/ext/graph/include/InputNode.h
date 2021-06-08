@@ -4,6 +4,7 @@
 
 #ifndef NEATC_INPUTNODE_H
 #define NEATC_INPUTNODE_H
+#include <memory>
 
 #include "Node.h"
 

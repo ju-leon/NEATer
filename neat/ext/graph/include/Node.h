@@ -7,6 +7,8 @@
 
 #include <list>
 #include <ostream>
+#include <memory>
+
 #include "Edge.h"
 
 class Edge;

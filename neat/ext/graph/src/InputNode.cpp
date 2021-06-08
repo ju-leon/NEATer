@@ -2,7 +2,8 @@
 // Created by Leon Jungemeyer on 01.06.21.
 //
 
-#include <iostream>
+#include <memory>
+
 #include "../include/InputNode.h"
 
 double InputNode::call() {

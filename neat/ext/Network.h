@@ -10,6 +10,7 @@
 #include "graph/include/InputNode.h"
 #include <iostream>
 #include <vector>
+#include <memory>
 
 struct hash_pair {
     template<class T1, class T2>

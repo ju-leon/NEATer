@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include <memory>
+
 #include "../include/Edge.h"
 
 Edge::Edge(int id, std::shared_ptr<Node> in, std::shared_ptr<Node> out) : id(id) {
