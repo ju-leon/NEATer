@@ -14,7 +14,7 @@ class NodeGene {
     bool disabled;
 public:
 
-    NodeGene(const std::shared_ptr<Node> &node);
+    NodeGene(std::shared_ptr<Node> node);
 
     const std::shared_ptr<Node> &getNode() const;
 

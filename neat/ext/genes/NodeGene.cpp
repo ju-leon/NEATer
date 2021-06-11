@@ -4,7 +4,10 @@
 
 #include "NodeGene.h"
 
-NodeGene::NodeGene(const std::shared_ptr<Node> &node) : node(node) {}
+NodeGene::NodeGene(std::shared_ptr<Node> node) {
+    NodeGene::node = node;
+    disabled = false;
+}
 
 
 double NodeGene::getBias() const {

@@ -14,7 +14,7 @@ class EdgeGene {
     bool disabled;
 
 public:
-    EdgeGene(const std::shared_ptr<Edge> &edge);
+    explicit EdgeGene(std::shared_ptr<Edge> edge);
 
     const std::shared_ptr<Edge> &getEdge() const;
 

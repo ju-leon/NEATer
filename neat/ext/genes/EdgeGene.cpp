@@ -4,7 +4,10 @@
 
 #include "EdgeGene.h"
 
-EdgeGene::EdgeGene(const std::shared_ptr<Edge> &edge) : edge(edge) {}
+EdgeGene::EdgeGene(std::shared_ptr<Edge> edge) {
+    EdgeGene::edge = edge;
+    disabled = false;
+}
 
 const std::shared_ptr<Edge> &EdgeGene::getEdge() const {
     return edge;
