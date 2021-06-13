@@ -5,6 +5,7 @@
 
 #include "network/Network.h"
 #include "graph/include/Node.h"
+#include "Genome.h"
 
 namespace py = pybind11;
 
@@ -63,4 +64,17 @@ PYBIND11_MODULE(_neat, m)
              {
                  return "<neat.Network>";
              });
+
+    py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
+        .def(py::init<std::shared_ptr<Network>>())
+        .def("mutate_node", &Genome::mutateNode)
+        .def("mutate_edge", &Genome::mutateEdge)
+        .def("mutate_weight_shift", &Genome::mutateWeightShift)
+        .def("mutate_weight_random", &Genome::mutateWeightRandom)
+        .def("mutate_toggle_connection", &Genome::mutateToggleConnection)
+        .def("mutate_bias_shift", &Genome::mutateBiasShift)
+        .def("mutate_bias_random", &Genome::mutateBiasRandom)
+        .def("mutate_disable_node", &Genome::mutateDisableNode)
+        .def("apply", &Genome::apply);
+
 }

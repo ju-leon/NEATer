@@ -60,7 +60,12 @@ Genome::Genome(const std::shared_ptr<Network> &network) : network(network) {
 
 }
 
-void Genome::mutateNode() {
+/**
+ * Randomly mutates an edge on an existing node.
+ * @param bias Bias assigned to new node
+ * @return 0 if a node was successfully mutated, -1 otherwise
+ */
+int Genome::mutateNode(double bias) {
     if (!edgeGenes.empty()) {
         auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
 
@@ -96,21 +101,23 @@ void Genome::mutateNode() {
 
         edgeGene.setDisabled(true);
 
+        return 0;
     }
+
+    return -1;
 }
 
-
-void Genome::mutateEdge() {
+/**
+ * Mutates a new edge between 2 random nodes.
+ * @param weight Weight assigned to the new edge.
+ * @return 0 if an edge was successfully inserted, -1 otherwise
+ */
+int Genome::mutateEdge(double weight) {
     //TODO: Com dependencies once before all genomes can mutate
     network->computeDependencies();
 
     auto start = *select_randomly(nodeGenes.begin(), nodeGenes.end());
     auto end = *select_randomly(nodeGenes.begin(), nodeGenes.end());
-
-    std::cout << "Start: " << start.getNode()->getId() << std::endl;
-    std::cout << "Start Dependency: " << start.getNode()->getDependencyLayer() << std::endl;
-    std::cout << "End: " << end.getNode()->getId() << std::endl;
-    std::cout << "End Dependency: " << end.getNode()->getDependencyLayer() << std::endl;
 
     //TODO: Less or less equal?
     if (end.getNode()->getDependencyLayer() == -1 ||
@@ -121,14 +128,92 @@ void Genome::mutateEdge() {
         if (edge) {
             //Check if edge already in EdgeGene List
             if (std::binary_search(std::begin(edgeGenes), std::end(edgeGenes), edge, compareEdgeGenes())) {
-                std::cout << " ------ Edge already exists, skipping" << std::endl;
+                // Edge already exists
             } else {
                 edgeGenes.emplace_back(edge);
-                // TODO: How to init weights?
-                edgeGenes.back().setWeight(1);
-                std::cout << " ------ Edge added" << std::endl;
+                edgeGenes.back().setWeight(weight);
+                return 0;
             }
         }
     }
 
+    return -1;
 }
+
+int Genome::mutateWeightShift(double weight) {
+    if (!edgeGenes.empty()) {
+        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+
+        edgeGene.setWeight(edgeGene.getWeight() + weight);
+
+        return 0;
+    }
+    return -1;
+}
+
+int Genome::mutateWeightRandom(double weight) {
+    if (!edgeGenes.empty()) {
+        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+
+        edgeGene.setWeight(weight);
+
+        return 0;
+    }
+    return -1;
+}
+
+int Genome::mutateToggleConnection() {
+    if (!edgeGenes.empty()) {
+        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+
+        edgeGene.setDisabled(!edgeGene.isDisabled());
+
+        return 0;
+    }
+    return -1;
+}
+
+int Genome::mutateBiasShift(double bias) {
+    if (!nodeGenes.empty()) {
+        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+
+        nodeGene.setBias(nodeGene.getBias() + bias);
+
+        return 0;
+    }
+    return -1;
+}
+
+int Genome::mutateBiasRandom(double bias) {
+    if (!nodeGenes.empty()) {
+        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+
+        nodeGene.setBias(bias);
+
+        return 0;
+    }
+    return -1;
+}
+
+int Genome::mutateDisableNode() {
+    if (!nodeGenes.empty()) {
+        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+
+        nodeGene.setDisabled(!nodeGene.isDisabled());
+
+        return 0;
+    }
+    return -1;
+}
+
+void Genome::apply() {
+    for (auto &it: nodeGenes) {
+        it.apply();
+    }
+    for (auto &it: edgeGenes) {
+        it.apply();
+    }
+}
+
+
+

@@ -24,12 +24,17 @@ ext_modules = [
                           "neat/ext/network/Network.cpp",
                           "neat/ext/network/graph/src/Node.cpp",
                           "neat/ext/network/graph/src/Edge.cpp",
-                          "neat/ext/network/graph/src/InputNode.cpp"
+                          "neat/ext/network/graph/src/InputNode.cpp",
+                          "neat/ext/Genome.cpp",
+                          "neat/ext/genes/EdgeGene.cpp",
+                          "neat/ext/genes/NodeGene.cpp",
                       ],
                       include_dirs=[
                           # Path to pybind11 headers
                           "neat/ext/network",
                           "neat/ext/network/include",
+                          "neat/ext"
+                          "neat/ext/genes"
                       ],
                       # Example: passing in the version to the compiled code
                       define_macros=[('VERSION_INFO', __version__)],

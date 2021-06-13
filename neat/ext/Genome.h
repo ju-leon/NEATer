@@ -19,19 +19,21 @@ private:
 public:
     Genome(const std::shared_ptr<Network> &network);
 
-    void mutateNode();
+    int mutateNode(double bias);
 
-    void mutateEdge();
+    int mutateEdge(double weight);
 
-    void mutateWeightShift();
+    int mutateWeightShift(double weight);
 
-    void mutateWeightRandom();
+    int mutateWeightRandom(double weight);
 
-    void mutateToggleConnection();
+    int mutateToggleConnection();
 
-    void mutateBiasShift();
+    int mutateBiasShift(double bias);
 
-    void mutateDisableNode();
+    int mutateBiasRandom(double bias);
+
+    int mutateDisableNode();
 
     void apply();
 
