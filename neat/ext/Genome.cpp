@@ -3,6 +3,7 @@
 //
 #include  <random>
 #include  <iterator>
+#include <algorithm>
 
 #include "Genome.h"
 
