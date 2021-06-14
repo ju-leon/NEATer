@@ -37,6 +37,17 @@ public:
 
     void apply();
 
+    const std::vector<EdgeGene> &getEdgeGenes() const;
+
+    const std::vector<NodeGene> &getNodeGenes() const;
+
+    Genome crossbreed(const Genome &genome);
+
+    double distance(const Genome &genome, int threshold, double c1, double c2, double c3);
+
+    void appendNodeGene(const NodeGene &gene);
+
+    void appendEdgeGene(const EdgeGene &gene);
 };
 
 

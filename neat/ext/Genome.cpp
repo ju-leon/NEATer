@@ -1,9 +1,10 @@
 //
 // Created by Leon Jungemeyer on 08.06.21.
 //
-#include  <random>
-#include  <iterator>
+#include <random>
+#include <iterator>
 #include <algorithm>
+#include <cmath>
 
 #include "Genome.h"
 
@@ -47,7 +48,7 @@ struct compareNodeGenes {
 };
 
 
-Genome::Genome(const std::shared_ptr<Network> &network) : network(network) {
+Genome::Genome(const std::shared_ptr<Network> &network) : network(network), edgeGenes() {
 
     nodeGenes.reserve(network->getInputNodes().size() + network->getOutputNodes().size());
 
@@ -123,6 +124,7 @@ int Genome::mutateEdge(double weight) {
     //TODO: Less or less equal?
     if (end.getNode()->getDependencyLayer() == -1 ||
         start.getNode()->getDependencyLayer() < end.getNode()->getDependencyLayer()) {
+
         auto edge = network->registerEdge(start.getNode()->getId(), end.getNode()->getId());
 
         // Make sure a valid edge is returned
@@ -143,9 +145,9 @@ int Genome::mutateEdge(double weight) {
 
 int Genome::mutateWeightShift(double weight) {
     if (!edgeGenes.empty()) {
-        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+        auto edgeGene = select_randomly(edgeGenes.begin(), edgeGenes.end());
 
-        edgeGene.setWeight(edgeGene.getWeight() + weight);
+        edgeGene->setWeight(edgeGene->getWeight() + weight);
 
         return 0;
     }
@@ -154,10 +156,9 @@ int Genome::mutateWeightShift(double weight) {
 
 int Genome::mutateWeightRandom(double weight) {
     if (!edgeGenes.empty()) {
-        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+        auto edgeGene = select_randomly(edgeGenes.begin(), edgeGenes.end());
 
-        edgeGene.setWeight(weight);
-
+        edgeGene->setWeight(weight);
         return 0;
     }
     return -1;
@@ -165,9 +166,9 @@ int Genome::mutateWeightRandom(double weight) {
 
 int Genome::mutateToggleConnection() {
     if (!edgeGenes.empty()) {
-        auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
+        auto edgeGene = select_randomly(edgeGenes.begin(), edgeGenes.end());
 
-        edgeGene.setDisabled(!edgeGene.isDisabled());
+        edgeGene->setDisabled(!edgeGene->isDisabled());
 
         return 0;
     }
@@ -176,9 +177,9 @@ int Genome::mutateToggleConnection() {
 
 int Genome::mutateBiasShift(double bias) {
     if (!nodeGenes.empty()) {
-        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+        auto nodeGene = select_randomly(nodeGenes.begin(), nodeGenes.end());
 
-        nodeGene.setBias(nodeGene.getBias() + bias);
+        nodeGene->setBias(nodeGene->getBias() + bias);
 
         return 0;
     }
@@ -187,9 +188,9 @@ int Genome::mutateBiasShift(double bias) {
 
 int Genome::mutateBiasRandom(double bias) {
     if (!nodeGenes.empty()) {
-        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+        auto nodeGene = select_randomly(nodeGenes.begin(), nodeGenes.end());
 
-        nodeGene.setBias(bias);
+        nodeGene->setBias(bias);
 
         return 0;
     }
@@ -198,9 +199,9 @@ int Genome::mutateBiasRandom(double bias) {
 
 int Genome::mutateDisableNode() {
     if (!nodeGenes.empty()) {
-        auto nodeGene = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+        auto nodeGene = select_randomly(nodeGenes.begin(), nodeGenes.end());
 
-        nodeGene.setDisabled(!nodeGene.isDisabled());
+        nodeGene->setDisabled(!nodeGene->isDisabled());
 
         return 0;
     }
@@ -216,5 +217,92 @@ void Genome::apply() {
     }
 }
 
+Genome Genome::crossbreed(const Genome &genome) {
+    auto gen = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
 
+    Genome child = Genome(network);
+
+    int index1 = 0;
+    int index2 = 0;
+    while (index1 < edgeGenes.size() && index2 < genome.edgeGenes.size()) {
+        if (edgeGenes[index1].getId() == genome.edgeGenes[index2].getId()) {
+            if (gen()) {
+                child.appendEdgeGene(edgeGenes[index1]);
+            } else {
+                child.appendEdgeGene(genome.edgeGenes[index2]);
+            }
+            index1++;
+            index2++;
+        } else if (edgeGenes[index1].getId() < genome.edgeGenes[index2].getId()) {
+            child.appendEdgeGene(edgeGenes[index1]);
+            index1++;
+        } else {
+            child.appendEdgeGene(genome.edgeGenes[index2]);
+            index2++;
+        }
+    }
+
+    while (index1 < edgeGenes.size()) {
+        child.appendEdgeGene(edgeGenes[index1]);
+        index1++;
+    }
+
+    while (index2 < genome.edgeGenes.size()) {
+        child.appendEdgeGene(genome.edgeGenes[index2]);
+        index2++;
+    }
+
+    return child;
+}
+
+double Genome::distance(const Genome &genome, int threshold, double c1, double c2, double c3) {
+
+    int numDisjoint = 0;
+    double weightDiff = 0;
+
+    int index1 = 0;
+    int index2 = 0;
+    while (index1 < edgeGenes.size() && index2 < genome.edgeGenes.size()) {
+        if (edgeGenes[index1].getId() == genome.edgeGenes[index2].getId()) {
+            weightDiff += abs(edgeGenes[index1].getWeight() - genome.edgeGenes[index2].getWeight());
+            index1++;
+            index2++;
+        } else if (edgeGenes[index1].getId() < genome.edgeGenes[index2].getId()) {
+            numDisjoint++;
+            index1++;
+        } else {
+            numDisjoint++;
+            index2++;
+        }
+    }
+
+    unsigned long numExcess = 0;
+    if (index1 == edgeGenes.size()) {
+        numExcess = genome.edgeGenes.size() - index2;
+    } else {
+        numExcess = edgeGenes.size() - index1;
+    }
+
+    unsigned long N = std::max(genome.edgeGenes.size(), edgeGenes.size());
+
+    N = N < threshold ? 1 : N;
+
+    return (c1 * numDisjoint / N) + (c2 * numExcess / N) + (c3 * weightDiff);
+}
+
+void Genome::appendNodeGene(const NodeGene &gene) {
+    nodeGenes.emplace_back(gene);
+}
+
+void Genome::appendEdgeGene(const EdgeGene &gene) {
+    edgeGenes.emplace_back(gene);
+}
+
+const std::vector<EdgeGene> &Genome::getEdgeGenes() const {
+    return edgeGenes;
+}
+
+const std::vector<NodeGene> &Genome::getNodeGenes() const {
+    return nodeGenes;
+}
 

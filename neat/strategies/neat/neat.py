@@ -1,8 +1,7 @@
 from numpy.core.fromnumeric import argmax
 from neat.strategies.neat.species import Species
 from _neat import Network
-from neat.strategies.neat.genome import Genome
-from neat.strategies.neat.genes import EdgeGene, NodeGene
+from neat.strategies.neat.genome import GenomeWrapper
 from random import choice
 
 from neat.strategies.strategy import Strategy
@@ -18,7 +17,7 @@ from operator import attrgetter
 
 class Neat(Strategy):
 
-    def __init__(self, activation, population_size=5, max_genetic_distance=5.0) -> None:
+    def __init__(self, activation, population_size=5, max_genetic_distance=3.0) -> None:
         self.activation = activation
 
         self.population_size = population_size
@@ -42,9 +41,9 @@ class Neat(Strategy):
         self.unassigned_genomes = []
 
         # Start with a single species containing all genomes of the current population
-        self.species = [Species(self.network, env, Genome(self.network))]
+        self.species = [Species(self.network, env, GenomeWrapper(self.network))]
         for _ in range(self.population_size):
-            genome = Genome(self.network)
+            genome = GenomeWrapper(self.network)
             genome.mutate()
 
             self.species[0].add_genome(genome)
@@ -155,7 +154,7 @@ class Neat(Strategy):
         for genome in genomes:
             assigned = False
             for species in self.species:
-                distance = species.distance(genome)
+                distance = species.genomes[0].distance(genome)
                 if distance < self.max_genetic_distance:
                     species.add_genome(genome)
                     assigned = True

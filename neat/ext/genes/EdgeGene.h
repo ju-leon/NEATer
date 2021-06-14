@@ -27,6 +27,8 @@ public:
     bool isDisabled() const;
 
     void setDisabled(bool disabled);
+
+    int getId() const;
 };
 
 

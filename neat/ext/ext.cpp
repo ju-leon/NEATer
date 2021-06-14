@@ -6,6 +6,8 @@
 #include "network/Network.h"
 #include "graph/include/Node.h"
 #include "Genome.h"
+#include "genes/EdgeGene.h"
+#include "genes/NodeGene.h"
 
 namespace py = pybind11;
 
@@ -65,6 +67,9 @@ PYBIND11_MODULE(_neat, m)
                  return "<neat.Network>";
              });
 
+    py::class_<EdgeGene>(m, "EdgeGene")
+        .def(py::init<std::shared_ptr<Edge>>());
+
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())
         .def("mutate_node", &Genome::mutateNode)
@@ -75,6 +80,10 @@ PYBIND11_MODULE(_neat, m)
         .def("mutate_bias_shift", &Genome::mutateBiasShift)
         .def("mutate_bias_random", &Genome::mutateBiasRandom)
         .def("mutate_disable_node", &Genome::mutateDisableNode)
+        .def("crossbreed", &Genome::crossbreed)
+        .def("distance", &Genome::distance)
+        .def("edge_genes", &Genome::getEdgeGenes)
         .def("apply", &Genome::apply);
+
 
 }

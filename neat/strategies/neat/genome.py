@@ -10,15 +10,15 @@ import _neat
 
 
 def decide(p):
-    return np.random.choice([True, False], [p, 1-p])
+    return np.random.choice([True, False], p=[p, 1-p])
 
 
-class Genome():
+class GenomeWrapper():
     def __init__(self, network: Network) -> None:
         self.genome = _neat.Genome(network)
 
-        self.p_mutate_node = 0.1
-        self.p_mutate_connection = 0.5
+        self.p_mutate_node = 0.5
+        self.p_mutate_connection = 0.8
         self.p_mutate_weight_shift = 0.7
         self.p_mutate_weight_random = 0.1
         self.p_mutate_toggle_connection = 0.5
@@ -79,8 +79,18 @@ class Genome():
     def mutate_disable_node(self):
         self.genome.mutate_disable_node()
 
+    def crossbreed(self, genome2):
+        self.genome.crossbreed(genome2.genome)
+
+    def distance(self, genome2):
+        dist = self.genome.distance(genome2.genome, 20, 1, 1, 1)
+        return dist
+
     def apply(self):
         self.genome.apply()
+
+    def __lt__(self, other):
+        return self.fitness < other.fitness
 
     def __repr__(self):
         return "[Genome: fitness={}]".format(self.fitness)

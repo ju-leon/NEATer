@@ -33,3 +33,7 @@ void EdgeGene::apply() {
     edge->setWeight(weight);
     edge->setActive(!disabled);
 }
+
+int EdgeGene::getId() const {
+    return edge->getId();
+}

@@ -1,6 +1,6 @@
 from typing import List
 from _neat import Network
-from neat.strategies.neat.genome import Genome
+from neat.strategies.neat.genome import GenomeWrapper
 from neat.strategies.neat.genes import NodeGene
 import numpy as np
 from random import choice
@@ -38,6 +38,9 @@ class Species():
             observation = self.env.reset()
             for _ in range(epoch_len):
                 pred = self.network.forward(observation)
+
+                print(pred)
+
                 if discrete:
                     pred = np.argmax(pred)
                 if render:
@@ -69,7 +72,7 @@ class Species():
             parent2 = choice(self.genomes)
 
             if parent1 != parent2:
-                child = self.crossbreed(parent1, parent2)
+                child = parent1.crossbreed(parent2)
 
                 if child != None:
                     self.genomes.append(child)
@@ -147,7 +150,7 @@ class Species():
 
         return (c1 * num_disjoint / N) + (c2 * num_excess / N) + (c3 * weight_diff)
 
-    def crossbreed(self, genomeA, genomeB) -> Genome:
+    def crossbreed(self, genomeA, genomeB) -> GenomeWrapper:
         if len(genomeA.edge_genes) == 0 or len(genomeB.edge_genes) == 0:
             return
 

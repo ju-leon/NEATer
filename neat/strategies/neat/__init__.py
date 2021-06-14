@@ -1,1 +1,1 @@
-from neat.strategies.neat.genome import Genome
+from neat.strategies.neat.genome import GenomeWrapper
