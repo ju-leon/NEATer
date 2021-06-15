@@ -20,6 +20,7 @@ from neat.network_pool import NeatOptimizer
 import gym
 
 env = gym.make('CartPole-v1')
+st = Neat(population_size=300)
 opt = NeatOptimizer(env, 4, 2, st)
 
 opt.solve(max_generations=10,
