@@ -1,10 +1,10 @@
 # !!! WORK IN PROGRESS !!!
 
-
+![neater](figures/neater.png)
 
 # NEATer - a faster NEAT implementation
 
-**NEATer** is a neater implementation of neat-python, **focused on spead and ease of use**. The genectic crossovers and mutations are entirely written in C++ to increase computation speed. NEATer provides a convienent Python interface and is fully compatible with **OpenAI** environments.
+**NEATer** is a neater implementation of neat-python, **focused on speed and ease of use**. The genectic crossovers and mutations are entirely written in C++ to increase computation speed. NEATer provides a convienent Python interface and is fully compatible with **OpenAI** environments.
 
 **Installation:**
 
