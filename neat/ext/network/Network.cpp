@@ -10,7 +10,7 @@
 #include "graph/include/Edge.h"
 
 
-Network::Network(int inputs, int outputs) {
+Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
     edgeInnovationNumber = 0;
     nodeInnovationNumber = 0;
     for (int i = 0; i < inputs; i++) {
@@ -49,6 +49,11 @@ std::shared_ptr<Edge> Network::registerEdge(int inId, int outId) {
 
     //Check if output node is not a input node
     if (nodes.find(outId)->second->getDependencyLayer() == 0) {
+        return nullptr;
+    }
+
+    // Check if input node is not a output node
+    if (inId >= inputs && inId < inputs + outputs) {
         return nullptr;
     }
 
@@ -169,4 +174,12 @@ void Network::reset() {
     for (auto &it: edges) {
         it.second->setActive(false);
     }
+}
+
+int Network::getInputs() const {
+    return inputs;
+}
+
+int Network::getOutputs() const {
+    return outputs;
 }

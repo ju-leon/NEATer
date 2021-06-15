@@ -17,7 +17,7 @@ from operator import attrgetter
 
 class Neat(Strategy):
 
-    def __init__(self, activation, population_size=5, max_genetic_distance=3.0) -> None:
+    def __init__(self, activation, population_size=5, max_genetic_distance=3) -> None:
         self.activation = activation
 
         self.population_size = population_size
@@ -41,20 +41,17 @@ class Neat(Strategy):
         self.unassigned_genomes = []
 
         # Start with a single species containing all genomes of the current population
-        self.species = [Species(self.network, env, GenomeWrapper(self.network))]
+        self.species = [
+            Species(self.network, env, GenomeWrapper(self.network))]
         for _ in range(self.population_size):
             genome = GenomeWrapper(self.network)
             genome.mutate()
-
             self.species[0].add_genome(genome)
 
     def solve_epoch(self, epoch_len, discrete, offset, render=False):
 
         # Assign all individuals to their species
         self.assign_species()
-
-        self.kill_underperformer()
-        self.remove_extinct_species()
 
         self.reproduce()
         self.mutate()
@@ -64,12 +61,22 @@ class Neat(Strategy):
 
         # Evaluate all species
         rewards = []
-        for species in tqdm(self.species):
+        for species in self.species:
             reward = species.evaluate(epoch_len, discrete, offset, render)
             rewards.append(reward)
 
             if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:
                 self.best_genome = species.genomes[0]
+
+            print("Best Genome: {}, Population Fitness: {}, Max Fitness: {}, Size: {}".format(
+                species.genomes[0].fitness,
+                species.fitness,
+                species.fitness_max,
+                len(species.genomes),
+            ))
+
+        self.kill_underperformer()
+        self.remove_extinct_species()
 
         data = dict()
         data["rewards"] = np.array(rewards)
@@ -99,18 +106,11 @@ class Neat(Strategy):
         self.species.sort()
         for species in reversed(self.species):
             allowed_offspring /= 2
-            print("Best Genome: {}, Population Fitness: {}, Max Fitness: {}, Size: {}, Offspring: {}".format(
-                species.genomes[0].fitness,
-                species.fitness,
-                species.fitness_max,
-                len(species.genomes),
-                allowed_offspring,
-            ))
 
             # Allow every species at least one offspring
             species.reproduce(int(allowed_offspring) + 1)
 
-    def kill_underperformer(self, percentage=0.6):
+    def kill_underperformer(self, percentage=0.5):
         for species in self.species:
             species.kill_percentage(percentage)
 

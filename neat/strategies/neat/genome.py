@@ -17,11 +17,11 @@ class GenomeWrapper():
     def __init__(self, network: Network) -> None:
         self.genome = _neat.Genome(network)
 
-        self.p_mutate_node = 0.5
-        self.p_mutate_connection = 0.8
-        self.p_mutate_weight_shift = 0.7
-        self.p_mutate_weight_random = 0.1
-        self.p_mutate_toggle_connection = 0.5
+        self.p_mutate_node = 0.2
+        self.p_mutate_connection = 0.2
+        self.p_mutate_weight_shift = 0.2
+        self.p_mutate_weight_random = 0.2
+        self.p_mutate_toggle_connection = 0.2
         self.p_mutate_bias = 0.1
         self.p_mutate_toggle_node = 0.1
 

@@ -119,7 +119,8 @@ int Genome::mutateEdge(double weight) {
     network->computeDependencies();
 
     auto start = *select_randomly(nodeGenes.begin(), nodeGenes.end());
-    auto end = *select_randomly(nodeGenes.begin(), nodeGenes.end());
+    // Exclude inputs from selectable output genes
+    auto end = *select_randomly(nodeGenes.begin() + network->getInputs(), nodeGenes.end());
 
     //TODO: Less or less equal?
     if (end.getNode()->getDependencyLayer() == -1 ||

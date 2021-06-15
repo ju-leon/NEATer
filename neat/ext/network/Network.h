@@ -41,6 +41,10 @@ public:
 
     void reset();
 
+    int getInputs() const;
+
+    int getOutputs() const;
+
 private:
     std::unordered_map<std::pair<int, int>, std::shared_ptr<Edge>, hash_pair> edges;
     std::unordered_map<int, std::shared_ptr<Node>> nodes;
@@ -52,6 +56,8 @@ private:
     int nodeInnovationNumber;
     int edgeInnovationNumber;
 
+    const int inputs;
+    const int outputs;
 
 };
 
