@@ -8,6 +8,7 @@
 #include <memory>
 #include "../network/graph/include/Node.h"
 
+
 class NodeGene {
     std::shared_ptr<Node> node;
     double bias = 0;
@@ -29,6 +30,9 @@ public:
     bool isDisabled() const;
 
     void setDisabled(bool disabled);
+
+    int getId() const;
+
 };
 
 

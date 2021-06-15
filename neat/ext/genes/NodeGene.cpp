@@ -39,3 +39,7 @@ void NodeGene::apply() {
     node->setBias(bias);
 }
 
+int NodeGene::getId() const {
+    return node->getId();
+}
+

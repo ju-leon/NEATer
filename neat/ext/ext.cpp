@@ -68,7 +68,30 @@ PYBIND11_MODULE(_neat, m)
              });
 
     py::class_<EdgeGene>(m, "EdgeGene")
-        .def(py::init<std::shared_ptr<Edge>>());
+        .def(py::init<std::shared_ptr<Edge>>())
+        .def_property("weight", &EdgeGene::getWeight, &EdgeGene::setWeight)
+        .def_property("disabled", &EdgeGene::isDisabled, &EdgeGene::setDisabled)
+        .def("get_id", &EdgeGene::getId)
+        .def("apply", &EdgeGene::apply)
+        .def("get_edge", &EdgeGene::getEdge)
+        .def("__repr__",
+            [](const EdgeGene &a)
+            {
+            return "<neat.EdgeGene id=" + std::to_string(a.getId()) + ">";
+        });
+
+    py::class_<NodeGene>(m, "NodeGene")
+        .def(py::init<std::shared_ptr<Node>>())
+        .def_property("bias", &NodeGene::getBias, &NodeGene::setBias)
+        .def_property("disabled", &NodeGene::isDisabled, &NodeGene::setDisabled)
+        .def("get_id", &NodeGene::getId)
+        .def("apply", &NodeGene::apply)
+        .def("get_node", &NodeGene::getNode)
+        .def("__repr__",
+            [](const NodeGene &a)
+            {
+            return "<neat.NodeGene id=" + std::to_string(a.getId()) + ">";
+        });
 
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())

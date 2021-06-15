@@ -38,8 +38,7 @@ class Species():
             observation = self.env.reset()
             for _ in range(epoch_len):
                 pred = self.network.forward(observation)
-
-                print(pred)
+                # print(pred)
 
                 if discrete:
                     pred = np.argmax(pred)
