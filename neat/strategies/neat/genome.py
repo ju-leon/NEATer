@@ -15,6 +15,7 @@ def decide(p):
 
 class GenomeWrapper():
     def __init__(self, network: Network) -> None:
+        self.network = network
         self.genome = _neat.Genome(network)
 
         self.p_mutate_node = 0.2
@@ -80,7 +81,10 @@ class GenomeWrapper():
         self.genome.mutate_disable_node()
 
     def crossbreed(self, genome2):
-        self.genome.crossbreed(genome2.genome)
+        child = GenomeWrapper(self.network)
+        child.genome = self.genome.crossbreed(genome2.genome)
+
+        return child
 
     def distance(self, genome2):
         dist = self.genome.distance(genome2.genome, 20, 1, 1, 1)

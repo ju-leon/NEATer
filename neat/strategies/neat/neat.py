@@ -17,7 +17,7 @@ from operator import attrgetter
 
 class Neat(Strategy):
 
-    def __init__(self, activation, population_size=5, max_genetic_distance=3) -> None:
+    def __init__(self, activation, population_size=5, max_genetic_distance=6) -> None:
         self.activation = activation
 
         self.population_size = population_size
@@ -50,11 +50,7 @@ class Neat(Strategy):
 
     def solve_epoch(self, epoch_len, discrete, offset, render=False):
 
-        # Assign all individuals to their species
-        self.assign_species()
 
-        self.reproduce()
-        self.mutate()
 
         # Reset the best genome every generation. This is important in gyms with randomness
         self.best_genome = None
@@ -75,8 +71,13 @@ class Neat(Strategy):
                 len(species.genomes),
             ))
 
+        # Assign all individuals to their species
+        self.assign_species()
         self.kill_underperformer()
         self.remove_extinct_species()
+
+        self.reproduce()
+        self.mutate()
 
         data = dict()
         data["rewards"] = np.array(rewards)
@@ -114,7 +115,7 @@ class Neat(Strategy):
         for species in self.species:
             species.kill_percentage(percentage)
 
-    def remove_extinct_species(self, extinction_threshold=1):
+    def remove_extinct_species(self, extinction_threshold=2):
         """
         Remove all species with fewer genomes than extinction_threshold.
         #TODO: Keep genomes from extinct species or let them die with the species?

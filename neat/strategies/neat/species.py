@@ -68,7 +68,6 @@ class Species():
 
             if parent1 != parent2:
                 child = parent1.crossbreed(parent2)
-
                 if child != None:
                     self.genomes.append(child)
 
