@@ -15,17 +15,17 @@ pip install git+https://github.com/ju-leon/NEATer.git
 **Quick and simple setup:**
 
 ```python
-import neat
-from neat.network_pool import NeatOptimizer
+from neater import Neat, Agent
 import gym
 
 env = gym.make('CartPole-v1')
-st = Neat(population_size=300)
-opt = NeatOptimizer(env, 4, 2, st)
 
-opt.solve(max_generations=10,
-          epoch_len=800,
-          discrete=True,
-          render=False)
+strategy = Neat(population_size=300)
+agent = Agent(env, strategy, 4, 2)
+
+agent.solve(max_generations=10,
+            epoch_len=800,
+            discrete=True,
+            render=False)
 ```
 
