@@ -20,21 +20,21 @@ __version__ = "0.0.1"
 ext_modules = [
     Pybind11Extension("_neat",
                       [
-                          "neat/ext/ext.cpp",
-                          "neat/ext/network/Network.cpp",
-                          "neat/ext/network/graph/src/Node.cpp",
-                          "neat/ext/network/graph/src/Edge.cpp",
-                          "neat/ext/network/graph/src/InputNode.cpp",
-                          "neat/ext/Genome.cpp",
-                          "neat/ext/genes/EdgeGene.cpp",
-                          "neat/ext/genes/NodeGene.cpp",
+                          "neater/ext/ext.cpp",
+                          "neater/ext/network/Network.cpp",
+                          "neater/ext/network/graph/src/Node.cpp",
+                          "neater/ext/network/graph/src/Edge.cpp",
+                          "neater/ext/network/graph/src/InputNode.cpp",
+                          "neater/ext/Genome.cpp",
+                          "neater/ext/genes/EdgeGene.cpp",
+                          "neater/ext/genes/NodeGene.cpp",
                       ],
                       include_dirs=[
                           # Path to pybind11 headers
-                          "neat/ext/network",
-                          "neat/ext/network/include",
-                          "neat/ext"
-                          "neat/ext/genes"
+                          "neater/ext/network",
+                          "neater/ext/network/include",
+                          "neater/ext"
+                          "neater/ext/genes"
                       ],
                       # Example: passing in the version to the compiled code
                       define_macros=[('VERSION_INFO', __version__)],
