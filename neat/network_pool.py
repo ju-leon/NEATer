@@ -20,9 +20,6 @@ class NeatOptimizer():
             data = self.strategy.solve_epoch(
                 epoch_len, discrete, reward_offset, render)
 
-            if render:
-                self.plotter.plot()
-
             print("Generation {}/{}: Best={}, Average={}, Species={}".format(
                 generation, max_generations,
                 np.max(data["rewards"]),
