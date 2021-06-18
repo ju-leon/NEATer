@@ -17,19 +17,18 @@ from operator import attrgetter
 
 class Neat(Strategy):
 
-    def __init__(self, activation, population_size=5, max_genetic_distance=6) -> None:
-        self.activation = activation
+    def __init__(self, **kwargs) -> None:
+        self.activation = kwargs.get('activation', None)
 
-        self.population_size = population_size
+        self.population_size = kwargs.get('population_size', 100)
+        self.max_genetic_distance = kwargs.get('max_genetic_distance', 5)
+
+        self.kwargs = kwargs
 
         self.node_innovation_number = 0
         self.edge_innovation_number = 0
 
-        self.num_survivors = 10
-
-        self.max_genetic_distance = max_genetic_distance
-
-    def init_population(self, env, input_shape, output_shape) -> None:
+    def init_population(self, env, input_shape, output_shape, discrete=True) -> None:
         self.env = env
 
         self.input_size = input_shape  # .flatten()
@@ -40,17 +39,17 @@ class Neat(Strategy):
 
         self.unassigned_genomes = []
 
+        self.discrete = discrete
+
         # Start with a single species containing all genomes of the current population
         self.species = [
-            Species(self.network, env, GenomeWrapper(self.network))]
+            Species(self.network, env, GenomeWrapper(self.network), self.discrete, **self.kwargs)]
         for _ in range(self.population_size):
             genome = GenomeWrapper(self.network)
             genome.mutate()
             self.species[0].add_genome(genome)
 
-    def solve_epoch(self, epoch_len, discrete, offset, render=False):
-
-
+    def solve_epoch(self, epoch_len, offset, render=False):
 
         # Reset the best genome every generation. This is important in gyms with randomness
         self.best_genome = None
@@ -58,7 +57,7 @@ class Neat(Strategy):
         # Evaluate all species
         rewards = []
         for species in self.species:
-            reward = species.evaluate(epoch_len, discrete, offset, render)
+            reward = species.evaluate(epoch_len, offset, render)
             rewards.append(reward)
 
             if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:

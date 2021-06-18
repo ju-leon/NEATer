@@ -13,7 +13,7 @@ def copy_gene(gene):
 
 
 class Species():
-    def __init__(self, network: Network, env: Env,  genome):
+    def __init__(self, network: Network, env: Env,  genome, discrete=True, **kwargs):
         self.network = network
         self.env = env
         self.genomes = [genome]
@@ -21,10 +21,12 @@ class Species():
         self.fitness = 0
         self.fitness_max = 0
 
+        self.discrete = discrete
+
     def add_genome(self, genome) -> None:
         self.genomes.append(genome)
 
-    def evaluate(self, epoch_len, discrete=True, offset=0, render=False):
+    def evaluate(self, epoch_len, offset=0, render=False):
         """
         Evaluate the fitness of all genomes in the species.
         """
@@ -40,7 +42,7 @@ class Species():
                 pred = self.network.forward(observation)
                 # print(pred)
 
-                if discrete:
+                if self.discrete:
                     pred = np.argmax(pred)
                 if render:
                     self.env.render()
