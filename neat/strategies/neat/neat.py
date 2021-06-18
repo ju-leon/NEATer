@@ -43,9 +43,9 @@ class Neat(Strategy):
 
         # Start with a single species containing all genomes of the current population
         self.species = [
-            Species(self.network, env, GenomeWrapper(self.network), self.discrete, **self.kwargs)]
+            Species(self.network, env, GenomeWrapper(self.network, **self.kwargs), self.discrete, **self.kwargs)]
         for _ in range(self.population_size):
-            genome = GenomeWrapper(self.network)
+            genome = GenomeWrapper(self.network, **self.kwargs)
             genome.mutate()
             self.species[0].add_genome(genome)
 

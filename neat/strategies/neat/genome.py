@@ -84,7 +84,7 @@ class GenomeWrapper():
         self.genome.mutate_disable_node()
 
     def crossbreed(self, genome2):
-        child = GenomeWrapper(self.network)
+        child = GenomeWrapper(self.network, **self.kwargs)
         child.genome = self.genome.crossbreed(genome2.genome)
 
         return child
