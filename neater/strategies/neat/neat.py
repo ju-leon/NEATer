@@ -168,3 +168,8 @@ class Neat(Strategy):
         self.network.reset()
         self.best_genome.apply()
         return self.network
+
+    def predict_best(self, x: np.array):
+        self.network.reset()
+        self.best_genome.apply()
+        return self.network.forward(x)
