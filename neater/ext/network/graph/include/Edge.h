@@ -49,6 +49,10 @@ public:
 
     const std::shared_ptr<Node> &getOutputNode() const;
 
+    void setInputNode(const std::shared_ptr<Node> &inputNode);
+
+    void setOutputNode(const std::shared_ptr<Node> &outputNode);
+
     friend std::ostream &operator<<(std::ostream &os, const Edge &edge);
 
 };

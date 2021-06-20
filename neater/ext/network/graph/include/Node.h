@@ -5,7 +5,7 @@
 #ifndef NEATC_NODE_H
 #define NEATC_NODE_H
 
-#include <list>
+#include <vector>
 #include <ostream>
 #include <memory>
 
@@ -14,7 +14,7 @@
 class Edge;
 
 class Node {
-    std::list<std::shared_ptr<Edge>> connections;
+    std::vector<std::shared_ptr<Edge>> connections;
     double bias;
 
     bool active;
@@ -42,6 +42,8 @@ public:
     virtual int getDependencyLayer();
 
     void addConnection(std::shared_ptr<Edge> edge);
+
+    void resetConnections();
 
     bool isActive() const;
 

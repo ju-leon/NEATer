@@ -12,6 +12,8 @@ class InputNode : public Node {
     double value;
 
 public:
+    InputNode() {};
+
     InputNode(int id) : Node{id} {};
 
     double call() override;

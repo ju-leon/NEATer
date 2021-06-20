@@ -15,14 +15,16 @@ Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
     nodeInnovationNumber = 0;
     for (int i = 0; i < inputs; i++) {
         int id = nodeInnovationNumber++;
-        std::shared_ptr<Node> node = std::make_shared<InputNode>(id);
+        std::shared_ptr<Node> node = std::static_pointer_cast<Node>(
+                std::shared_ptr<InputNode>(new InputNode(id))
+        );
         nodes[id] = node;
         inputNodes.push_back(std::static_pointer_cast<InputNode>(node));
     }
 
     for (int i = 0; i < outputs; i++) {
         int id = nodeInnovationNumber++;
-        nodes[id] = std::make_unique<Node>(id);
+        nodes[id] = std::shared_ptr<Node>(new Node(id));
         outputNodes.emplace_back(nodes[id]);
     }
 
@@ -183,3 +185,68 @@ int Network::getInputs() const {
 int Network::getOutputs() const {
     return outputs;
 }
+
+const std::unordered_map<std::pair<int, int>, std::shared_ptr<Edge>, hash_pair> &Network::getEdges() const {
+    return edges;
+}
+
+const std::unordered_map<int, std::shared_ptr<Node>> &Network::getNodes() const {
+    return nodes;
+}
+
+int Network::getNodeInnovationNumber() const {
+    return nodeInnovationNumber;
+}
+
+int Network::getEdgeInnovationNumber() const {
+    return edgeInnovationNumber;
+}
+
+
+Network Network::load(std::vector<int> inputNodes,
+                      std::vector<int> outputNodes,
+                      std::vector<Node> nodes,
+                      std::vector<std::tuple<Edge, int, int>> edges,
+                      int nodeInnovationNumber,
+                      int edgeInnovationNumber) {
+
+    Network net = Network(0, 0);
+
+    net.inputs = inputNodes.size();
+    net.outputs = outputNodes.size();
+
+    for (int id: inputNodes) {
+        net.inputNodes.emplace_back(std::make_shared<InputNode>(id));
+    }
+
+
+    for (auto &node: nodes) {
+        if (node.getId() < net.inputs) {
+            net.nodes[node.getId()] = net.inputNodes[node.getId()];
+        } else {
+            net.nodes[node.getId()] = std::shared_ptr<Node>(new Node(node));
+        }
+        net.nodes[node.getId()]->resetConnections();
+    }
+
+    for (int id: outputNodes) {
+        net.outputNodes.emplace_back(net.nodes[id]);
+    }
+
+    for (auto &it: edges) {
+        std::pair<int, int> key(std::get<1>(it), std::get<2>(it));
+        net.edges[key] = std::make_shared<Edge>(std::get<0>(it));
+
+        net.edges[key]->setInputNode(net.nodes[std::get<1>(it)]);
+        net.edges[key]->setOutputNode(net.nodes[std::get<2>(it)]);
+
+        net.edges[key]->getOutputNode()->addConnection(net.edges[key]);
+    }
+
+
+    net.nodeInnovationNumber = nodeInnovationNumber;
+    net.edgeInnovationNumber = edgeInnovationNumber;
+
+    return net;
+}
+

@@ -3,6 +3,7 @@
 //
 
 #include <memory>
+#include <iostream>
 
 #include "../include/InputNode.h"
 
@@ -23,3 +24,4 @@ int InputNode::computeDependencyLayer() {
 int InputNode::getDependencyLayer() {
     return 0;
 }
+

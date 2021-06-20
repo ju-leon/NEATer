@@ -21,6 +21,19 @@ PYBIND11_MODULE(_neat, m)
         .def_property("active", &Node::isActive, &Node::setActive)
         .def("get_layer", &Node::getDependencyLayer)
         .def("get_id", &Node::getId)
+        .def(py::pickle(
+                [](const Node &n) {
+                    return py::make_tuple(n.getId(), n.getBias(), n.isActive());
+                },
+                [](py::tuple t) {
+                    if (t.size() != 3)
+                        throw std::runtime_error("Invalid state!");
+
+                    Node node(t[0].cast<int>(), t[1].cast<double>());
+                    node.setActive(t[2].cast<bool>());
+                    return node;
+                }
+                ))
         .def("__repr__",
              [](const Node &a)
              {
@@ -32,6 +45,17 @@ PYBIND11_MODULE(_neat, m)
         .def("get_layer", &InputNode::getDependencyLayer)
         .def("set_value", &InputNode::setValue)
         .def("get_id", &Node::getId)
+        .def(py::pickle(
+                [](const InputNode &n) {
+                    return py::make_tuple(n.getId());
+                },
+                [](py::tuple t) {
+                    if (t.size() != 1)
+                        throw std::runtime_error("Invalid state!");
+
+                    InputNode node(t[0].cast<int>());
+                    return node;
+                }))
         .def("__repr__",
         [](const InputNode &a)
         {
@@ -45,6 +69,27 @@ PYBIND11_MODULE(_neat, m)
         .def("get_id", &Edge::getId)
         .def("get_input", &Edge::getInputNode)
         .def("get_output", &Edge::getOutputNode)
+        .def(py::pickle(
+                [](const Edge &e) {
+                    return py::make_tuple(e.getId(),
+                                          e.getInputNode(),
+                                          e.getOutputNode(),
+                                          e.getWeight(),
+                                          e.isActive(),
+                                          e.getMutateToNode());
+                },
+                [](py::tuple t) {
+                    if (t.size() != 6)
+                        throw std::runtime_error("Invalid state!");
+
+                    Edge edge(t[0].cast<int>(), t[1].cast<std::shared_ptr<Node>>(), t[2].cast<std::shared_ptr<Node>>());
+
+                    edge.setWeight(t[3].cast<double>());
+                    edge.setActive(t[4].cast<bool>());
+                    edge.setMutateToNode(t[5].cast<int>());
+
+                    return edge;
+                }))
         .def("__repr__",
              [](const Edge &a)
              {
@@ -61,6 +106,61 @@ PYBIND11_MODULE(_neat, m)
         .def("get_output_nodes", &Network::getOutputNodes)
         .def("compute_dependencies", &Network::computeDependencies)
         .def("reset", &Network::reset)
+        .def(py::pickle(
+                [](const Network &n) {
+                    std::cout << "Started" << std::endl;
+                    std::vector<int> inputIds;
+                    for (auto &it: n.getInputNodes()) {
+                        inputIds.push_back(it->getId());
+                    }
+
+                    std::cout << "Here 1" << std::endl;
+
+                    std::vector<int> outputIds;
+                    for (auto &it: n.getOutputNodes()) {
+                        outputIds.push_back(it->getId());
+                    }
+
+                    std::cout << "Here 2" << std::endl;
+
+                    std::vector<Node> nodes;
+                    for (auto &it: n.getNodes()) {
+                        nodes.push_back(*it.second);
+                    }
+
+                    std::cout << "Here 3" << std::endl;
+
+                    std::vector<std::tuple<Edge, int, int>> edges;
+                    for (auto &it: n.getEdges()) {
+                        auto entry = std::make_tuple(*it.second, it.second->getInputNode()->getId(), it.second->getOutputNode()->getId());
+                        edges.push_back(entry);
+                    }
+
+                    std::cout << "Here 4" << std::endl;
+
+                    return py::make_tuple(inputIds,
+                                          outputIds,
+                                          nodes,
+                                          edges,
+                                          n.getNodeInnovationNumber(),
+                                          n.getEdgeInnovationNumber());
+                },
+                [](py::tuple t) {
+                    if (t.size() != 6)
+                        throw std::runtime_error("Invalid state!");
+
+                    Network net = Network::load(
+                            t[0].cast<std::vector<int>>(),
+                            t[1].cast<std::vector<int>>(),
+                            t[2].cast<std::vector<Node>>(),
+                            t[3].cast<std::vector<std::tuple<Edge, int, int>>>(),
+                            t[4].cast<int>(),
+                            t[5].cast<int>()
+                            );
+
+
+                    return net;
+                }))
         .def("__repr__",
              [](const Network &a)
              {

@@ -77,5 +77,13 @@ std::ostream &operator<<(std::ostream &os, const Edge &edge) {
     return os;
 }
 
+void Edge::setInputNode(const std::shared_ptr<Node> &inputNode) {
+    Edge::inputNode = inputNode;
+}
+
+void Edge::setOutputNode(const std::shared_ptr<Node> &outputNode) {
+    Edge::outputNode = outputNode;
+}
+
 
 
