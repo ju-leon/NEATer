@@ -17,6 +17,10 @@ public:
 
     NodeGene(std::shared_ptr<Node> node);
 
+    NodeGene(const std::shared_ptr<Node> &node, double bias, bool disabled);
+
+    NodeGene(double bias, bool disabled);
+
     const std::shared_ptr<Node> &getNode() const;
 
     void apply();

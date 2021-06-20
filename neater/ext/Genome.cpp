@@ -5,6 +5,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 #include "Genome.h"
 
@@ -307,3 +308,24 @@ const std::vector<NodeGene> &Genome::getNodeGenes() const {
     return nodeGenes;
 }
 
+Genome::Genome(const std::shared_ptr<Network> &network, const std::vector<std::tuple<int, double, bool>> &nodeGenes,
+               const std::vector<std::tuple<int, int, double, bool>> &edgeGenes) : network(network) {
+
+    auto &nodes = network->getNodes();
+    for (auto &nodeGeneTuple: nodeGenes) {
+        Genome::nodeGenes.emplace_back(
+                NodeGene(nodes.at(std::get<0>(nodeGeneTuple)),
+                         std::get<1>(nodeGeneTuple),
+                         std::get<2>(nodeGeneTuple)));
+    }
+
+    auto &edges = network->getEdges();
+    for (auto &edgeGeneTuple: edgeGenes) {
+        std::pair<int, int> key(std::get<0>(edgeGeneTuple), std::get<1>(edgeGeneTuple));
+        Genome::edgeGenes.emplace_back(
+                EdgeGene(edges.at(key),
+                         std::get<1>(edgeGeneTuple),
+                         std::get<2>(edgeGeneTuple)));
+    }
+
+}

@@ -19,6 +19,10 @@ private:
 public:
     Genome(const std::shared_ptr<Network> &network);
 
+    Genome(const std::shared_ptr<Network> &network,
+           const std::vector<std::tuple<int, double, bool>> &nodeGenes,
+           const std::vector<std::tuple<int, int, double, bool>> &edgeGenes);
+
     int mutateNode(double bias);
 
     int mutateEdge(double weight);

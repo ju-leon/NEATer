@@ -21,6 +21,7 @@ struct hash_pair {
     }
 };
 
+
 class Network {
 
 

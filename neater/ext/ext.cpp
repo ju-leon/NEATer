@@ -37,7 +37,7 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
              [](const Node &a)
              {
-                 return "<neat.Node id=" + std::to_string(a.getId()) + ">";
+                 return "<neater.Node id=" + std::to_string(a.getId()) + ">";
              });
 
     py::class_<InputNode, Node, std::shared_ptr<InputNode>>(m, "InputNode")
@@ -59,7 +59,7 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
         [](const InputNode &a)
         {
-        return "<neat.InputNode id=" + std::to_string(a.getId()) + ">";
+        return "<neater.InputNode id=" + std::to_string(a.getId()) + ">";
         });
 
     py::class_<Edge, std::shared_ptr<Edge>>(m, "Edge")
@@ -93,7 +93,7 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
              [](const Edge &a)
              {
-                 return "<neat.Edge id=" + std::to_string(a.getId()) + ">";
+                 return "<neater.Edge id=" + std::to_string(a.getId()) + ">";
              });
 
     // Include Network
@@ -108,35 +108,26 @@ PYBIND11_MODULE(_neat, m)
         .def("reset", &Network::reset)
         .def(py::pickle(
                 [](const Network &n) {
-                    std::cout << "Started" << std::endl;
                     std::vector<int> inputIds;
                     for (auto &it: n.getInputNodes()) {
                         inputIds.push_back(it->getId());
                     }
-
-                    std::cout << "Here 1" << std::endl;
 
                     std::vector<int> outputIds;
                     for (auto &it: n.getOutputNodes()) {
                         outputIds.push_back(it->getId());
                     }
 
-                    std::cout << "Here 2" << std::endl;
-
                     std::vector<Node> nodes;
                     for (auto &it: n.getNodes()) {
                         nodes.push_back(*it.second);
                     }
-
-                    std::cout << "Here 3" << std::endl;
 
                     std::vector<std::tuple<Edge, int, int>> edges;
                     for (auto &it: n.getEdges()) {
                         auto entry = std::make_tuple(*it.second, it.second->getInputNode()->getId(), it.second->getOutputNode()->getId());
                         edges.push_back(entry);
                     }
-
-                    std::cout << "Here 4" << std::endl;
 
                     return py::make_tuple(inputIds,
                                           outputIds,
@@ -164,7 +155,7 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
              [](const Network &a)
              {
-                 return "<neat.Network>";
+                 return "<neater.Network>";
              });
 
     py::class_<EdgeGene>(m, "EdgeGene")
@@ -177,7 +168,7 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
             [](const EdgeGene &a)
             {
-            return "<neat.EdgeGene id=" + std::to_string(a.getId()) + ">";
+            return "<neater.EdgeGene id=" + std::to_string(a.getId()) + ">";
         });
 
     py::class_<NodeGene>(m, "NodeGene")
@@ -190,11 +181,15 @@ PYBIND11_MODULE(_neat, m)
         .def("__repr__",
             [](const NodeGene &a)
             {
-            return "<neat.NodeGene id=" + std::to_string(a.getId()) + ">";
+            return "<neater.NodeGene id=" + std::to_string(a.getId()) + ">";
         });
 
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())
+        .def(py::init<std::shared_ptr<Network>,
+                std::vector<std::tuple<int, double, bool>>,
+                std::vector<std::tuple<int, int, double, bool>>
+                >())
         .def("mutate_node", &Genome::mutateNode)
         .def("mutate_edge", &Genome::mutateEdge)
         .def("mutate_weight_shift", &Genome::mutateWeightShift)
@@ -206,6 +201,7 @@ PYBIND11_MODULE(_neat, m)
         .def("crossbreed", &Genome::crossbreed)
         .def("distance", &Genome::distance)
         .def("edge_genes", &Genome::getEdgeGenes)
+        .def("node_genes", &Genome::getNodeGenes)
         .def("apply", &Genome::apply);
 
 

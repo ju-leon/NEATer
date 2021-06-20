@@ -37,3 +37,10 @@ void EdgeGene::apply() {
 int EdgeGene::getId() const {
     return edge->getId();
 }
+
+void EdgeGene::setEdge(const std::shared_ptr<Edge> &edge) {
+    EdgeGene::edge = edge;
+}
+
+EdgeGene::EdgeGene(const std::shared_ptr<Edge> &edge, double weight, bool disabled) : edge(edge), weight(weight),
+                                                                                      disabled(disabled) {}

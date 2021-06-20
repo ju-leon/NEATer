@@ -16,6 +16,10 @@ class EdgeGene {
 public:
     explicit EdgeGene(std::shared_ptr<Edge> edge);
 
+    EdgeGene(const std::shared_ptr<Edge> &edge, double weight, bool disabled);
+
+    void setEdge(const std::shared_ptr<Edge> &edge);
+
     const std::shared_ptr<Edge> &getEdge() const;
 
     void apply();

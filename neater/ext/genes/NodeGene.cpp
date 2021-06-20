@@ -43,3 +43,10 @@ int NodeGene::getId() const {
     return node->getId();
 }
 
+NodeGene::NodeGene(double bias, bool disabled) : bias(bias), disabled(disabled) {
+    NodeGene::node = nullptr;
+}
+
+NodeGene::NodeGene(const std::shared_ptr<Node> &node, double bias, bool disabled) : node(node), bias(bias),
+                                                                                    disabled(disabled) {}
+

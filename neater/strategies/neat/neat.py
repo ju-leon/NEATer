@@ -1,6 +1,6 @@
 from numpy.core.fromnumeric import argmax
 from neater.strategies.neat.species import Species
-from _neat import Network
+from _neat import Network, Genome
 from neater.strategies.neat.genome import GenomeWrapper
 from random import choice
 
@@ -12,6 +12,7 @@ from tqdm import tqdm
 import random
 from operator import attrgetter
 
+import pickle
 # TODO: MOVE TO TENSORFLOW ACTIVATION
 
 
@@ -25,17 +26,18 @@ class Neat(Strategy):
 
         self.kwargs = kwargs
 
-        self.node_innovation_number = 0
-        self.edge_innovation_number = 0
+        self.species = []
+        self.unassigned_genomes = []
+        self.best_genome = None
 
     def init_population(self, env, input_shape, output_shape, discrete=True) -> None:
         self.env = env
 
-        self.input_size = input_shape  # .flatten()
-        self.output_size = output_shape  # .flatten()
+        input_size = input_shape  # .flatten()
+        output_size = output_shape  # .flatten()
 
-        self.network = Network(
-            self.input_size, self.output_size)  # TODO: Pass AF, self.activation)
+        # TODO: Pass AF, self.activation)
+        self.network = Network(input_size, output_size)
 
         self.unassigned_genomes = []
 
@@ -173,3 +175,111 @@ class Neat(Strategy):
         self.network.reset()
         self.best_genome.apply()
         return self.network.forward(x)
+
+    def save(self, path):
+        best_genome = None
+        best_genome_index = (0, 0)
+
+        # Iterate over all species and save the node genes and edge genes as tuples
+        species_index = 0
+        species_list = []
+        for species in self.species:
+            genome_index = 0
+            genome_list = []
+            for genome in species.genomes:
+                # Save the index of the best genome seperately
+                if best_genome == None or genome.fitness >= best_genome.fitness:
+                    best_genome = genome
+                    best_genome_index = (species_index, genome_index)
+
+                # For each node gene, save the id of the corresponding node and the state
+                node_list = []
+                for node_gene in genome.genome.node_genes():
+                    node_list.append(
+                        (node_gene.get_id(), node_gene.bias, node_gene.disabled))
+
+                # For each edge gene, save the id of the corresponding input and output nodes and the state
+                edge_list = []
+                for edge_gene in genome.genome.edge_genes():
+                    edge_list.append(
+                        (edge_gene.get_edge().get_input().get_id(), edge_gene.get_edge().get_output().get_id(), edge_gene.weight, edge_gene.disabled))
+
+                genome_list.append((node_list, edge_list))
+                genome_index += 1
+
+            species_list.append(genome_list)
+            species_index += 1
+
+        # Iterate over all unassigned genomes and do the same
+        genome_index = 0
+        unassigned_genome_list = []
+        for genome in self.unassigned_genomes:
+            # If the best genome is in the unassigned genomes, mark it by setting species to -1
+            if best_genome == None or genome.fitness >= best_genome.fitness:
+                best_genome = genome
+                best_genome_index = (-1, genome_index)
+
+            node_list = []
+            for node_gene in genome.genome.node_genes():
+                node_list.append(
+                    (node_gene.get_id(), node_gene.bias, node_gene.disabled))
+
+            edge_list = []
+            for edge_gene in genome.genome.edge_genes():
+                edge_list.append(
+                    (edge_gene.get_edge().get_input().get_id(), edge_gene.get_edge().get_output().get_id(), edge_gene.weight, edge_gene.disabled))
+
+            unassigned_genome_list.append((node_list, edge_list))
+            genome_index += 1
+
+        with open(path, "wb") as file:
+            pickle.dump((species_list, unassigned_genome_list,
+                        self.discrete, self.network, best_genome_index, self.kwargs), file)
+
+    def load(path, env):
+        with open(path, "rb") as file:
+            species_list, unassigned_genome_list, discrete, network, best_genome_index, kwargs = pickle.load(
+                file)
+
+        neat = Neat(**kwargs)
+
+        neat.network = network
+        neat.discrete = discrete
+
+        species_index = 0
+        for species_entry in species_list:
+            species = Species(neat.network, env, None, neat.discrete, **kwargs)
+
+            genome_index = 0
+            species.genomes = []
+            for genome_entry in species_entry:
+                genome_wrapper = GenomeWrapper(neat.network, **kwargs)
+
+                genome_wrapper.genome = Genome(
+                    neat.network, genome_entry[0], genome_entry[1])
+
+                # If the current genome was marked as the best, tag it as best genome
+                if best_genome_index == (species_index, genome_index):
+                    neat.best_genome = genome_wrapper
+
+                species.add_genome(genome_wrapper)
+                genome_index += 1
+
+            neat.species.append(species)
+            species_index += 1
+
+        genome_index = 0
+        for genome_entry in unassigned_genome_list:
+            genome_wrapper = GenomeWrapper(neat.network, **kwargs)
+
+            genome_wrapper.genome = Genome(
+                neat.network, genome_entry[0], genome_entry[1])
+
+            # If the current genome was marked as the best, tag it as best genome
+            if best_genome_index == (-1, genome_index):
+                neat.best_genome = genome_wrapper
+
+            neat.unassigned_genomes.append(genome_wrapper)
+            genome_index += 1
+
+        return neat

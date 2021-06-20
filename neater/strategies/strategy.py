@@ -19,3 +19,11 @@ class Strategy():
     @abc.abstractmethod
     def predict_best(self, x: np.array) -> np.array:
         pass
+
+    @abc.abstractmethod
+    def save(self, path: str) -> None:
+        pass
+
+    @abc.abstractmethod
+    def load(path: str, env: Env):
+        pass

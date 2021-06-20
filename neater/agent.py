@@ -1,3 +1,4 @@
+from neater.strategies.strategy import Strategy
 from numpy.core.defchararray import equal
 import torch
 from tqdm import trange
@@ -33,11 +34,3 @@ class Agent():
 
     def predict(self, x: np.array) -> np.array:
         return self.strategy.predict_best(x)
-
-    def save(self, path: str) -> None:
-        with open(path, "wb") as output_file:
-            pickle.dump(self.strategy, output_file)
-
-    def load(self, path: str) -> None:
-        with open(path, "wb") as input_file:
-            self.strategy = pickle.load(input_file)
