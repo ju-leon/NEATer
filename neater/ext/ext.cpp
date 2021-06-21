@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
 #include <pybind11/stl.h>
+#include <pybind11/functional.h>
 #include <memory>
 
 #include "network/Network.h"
@@ -16,7 +17,7 @@ PYBIND11_MODULE(_neat, m)
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     py::class_<Node, std::shared_ptr<Node>>(m, "Node")
-        .def(py::init<int, double>())
+        .def(py::init<int, double, std::function<double(double)>>())
         .def_property("bias", &Node::getBias, &Node::setBias)
         .def_property("active", &Node::isActive, &Node::setActive)
         .def("get_layer", &Node::getDependencyLayer)
@@ -98,7 +99,7 @@ PYBIND11_MODULE(_neat, m)
 
     // Include Network
     py::class_<Network, std::shared_ptr<Network>>(m, "Network")
-        .def(py::init<int, int>())
+        .def(py::init<int, int, std::function<double(double)>>())
         .def("forward", &Network::forward)
         .def("register_node", &Network::registerNode)
         .def("register_edge", &Network::registerEdge)
@@ -106,6 +107,7 @@ PYBIND11_MODULE(_neat, m)
         .def("get_output_nodes", &Network::getOutputNodes)
         .def("compute_dependencies", &Network::computeDependencies)
         .def("reset", &Network::reset)
+        .def("set_activation", &Network::setActivation)
         .def(py::pickle(
                 [](const Network &n) {
                     std::vector<int> inputIds;
@@ -184,6 +186,7 @@ PYBIND11_MODULE(_neat, m)
             return "<neater.NodeGene id=" + std::to_string(a.getId()) + ">";
         });
 
+    
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())
         .def(py::init<std::shared_ptr<Network>,

@@ -24,10 +24,16 @@ class Node {
     bool cached;
 
     int dependencyLayer = -1;
+
+    std::function<double(double)> activation;
 public:
     Node();
 
     Node(int id);
+
+    Node(int id, const std::function<double(double)> &activation);
+
+    Node(int id, double bias, const std::function<double(double)> &activation);
 
     Node(int id, double bias);
 
@@ -55,7 +61,12 @@ public:
 
     void setBias(double bias);
 
+    const std::function<double(double)> &getActivation() const;
+
+    void setActivation(const std::function<double(double)> &activation);
+
     friend std::ostream &operator<<(std::ostream &os, const Node &node);
+
 
 };
 

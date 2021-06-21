@@ -11,6 +11,7 @@ import numpy as np
 from tqdm import tqdm
 import random
 from operator import attrgetter
+from torch import nn 
 
 import pickle
 # TODO: MOVE TO TENSORFLOW ACTIVATION
@@ -19,10 +20,11 @@ import pickle
 class Neat(Strategy):
 
     def __init__(self, **kwargs) -> None:
-        self.activation = kwargs.get('activation', None)
+        self.activation = kwargs.get('activation')
 
         self.population_size = kwargs.get('population_size', 100)
         self.max_genetic_distance = kwargs.get('max_genetic_distance', 5)
+
 
         self.kwargs = kwargs
 
@@ -37,7 +39,7 @@ class Neat(Strategy):
         output_size = output_shape  # .flatten()
 
         # TODO: Pass AF, self.activation)
-        self.network = Network(input_size, output_size)
+        self.network = Network(input_size, output_size, self.activation)
 
         self.unassigned_genomes = []
 
@@ -244,6 +246,8 @@ class Neat(Strategy):
         neat = Neat(**kwargs)
 
         neat.network = network
+        network.set_activation(kwargs.get("activation"))
+        
         neat.discrete = discrete
 
         species_index = 0

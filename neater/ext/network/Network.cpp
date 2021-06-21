@@ -9,7 +9,6 @@
 
 #include "graph/include/Edge.h"
 
-
 Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
     edgeInnovationNumber = 0;
     nodeInnovationNumber = 0;
@@ -27,13 +26,20 @@ Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
         nodes[id] = std::shared_ptr<Node>(new Node(id));
         outputNodes.emplace_back(nodes[id]);
     }
+}
 
+
+Network::Network(int inputs, int outputs, const std::function<double(double)> &activation) : Network(inputs, outputs) {
+    Network::activation = activation;
 }
 
 const std::vector<std::shared_ptr<Node>> &Network::getOutputNodes() const {
     return outputNodes;
 }
 
+/**
+ * Computes the dependency graph of the network to get a layered structure.
+ */
 void Network::computeDependencies() {
     for (auto &it: nodes) {
         it.second->resetDependencyLayer();
@@ -44,6 +50,12 @@ void Network::computeDependencies() {
     }
 }
 
+/**
+ * Registers an edge between two nodes.
+ * @param inId Id of the input node
+ * @param outId Id of the output node
+ * @return Returns the edge if successful, nullptr if not
+ */
 std::shared_ptr<Edge> Network::registerEdge(int inId, int outId) {
     // Check if Nodes exist
     assert(nodes.find(inId) != nodes.end());
@@ -110,7 +122,7 @@ Network::registerNode(int inId, int outId) {
     std::shared_ptr<Edge> rightEdge;
     if (edge->getMutateToNode() == -1) {
         int id = nodeInnovationNumber++;
-        nodes[id] = std::make_unique<Node>(id);
+        nodes[id] = std::make_unique<Node>(id, activation);
         middleNode = nodes[id];
 
         std::pair<int, int> leftKey(inId, middleNode->getId());
@@ -138,7 +150,12 @@ Network::registerNode(int inId, int outId) {
 
     return std::make_tuple(leftEdge, middleNode, rightEdge);
 }
-
+/**
+ * Predicts a single sample by passing it through the network.
+ * Assumes that a genome has been called first to set the weights of the network.
+ * @param x Sample
+ * @return Result
+ */
 std::vector<double> Network::forward(std::vector<double> x) {
     assert(x.size() == inputNodes.size());
 
@@ -203,6 +220,17 @@ int Network::getEdgeInnovationNumber() const {
 }
 
 
+/**
+ * Used for loading a network after pickling. The activation cannot be pickled,
+ * so instead it needs to be set manually after the network is constructed
+ * @param inputNodes Id of the input nodes in the network
+ * @param outputNodes Id of the output nodes of the network
+ * @param nodes All nodes in the network
+ * @param edges All edges in the network and the ids of their in/outputs
+ * @param nodeInnovationNumber current index of node innovation number
+ * @param edgeInnovationNumber current index of edge innovation number
+ * @return
+ */
 Network Network::load(std::vector<int> inputNodes,
                       std::vector<int> outputNodes,
                       std::vector<Node> nodes,
@@ -219,7 +247,6 @@ Network Network::load(std::vector<int> inputNodes,
         net.inputNodes.emplace_back(std::make_shared<InputNode>(id));
     }
 
-
     for (auto &node: nodes) {
         if (node.getId() < net.inputs) {
             net.nodes[node.getId()] = net.inputNodes[node.getId()];
@@ -233,6 +260,7 @@ Network Network::load(std::vector<int> inputNodes,
         net.outputNodes.emplace_back(net.nodes[id]);
     }
 
+
     for (auto &it: edges) {
         std::pair<int, int> key(std::get<1>(it), std::get<2>(it));
         net.edges[key] = std::make_shared<Edge>(std::get<0>(it));
@@ -243,10 +271,26 @@ Network Network::load(std::vector<int> inputNodes,
         net.edges[key]->getOutputNode()->addConnection(net.edges[key]);
     }
 
-
     net.nodeInnovationNumber = nodeInnovationNumber;
     net.edgeInnovationNumber = edgeInnovationNumber;
 
     return net;
 }
+
+const std::function<double(double)> &Network::getActivation() const {
+    return activation;
+}
+
+/**
+ * Used to set the networks activation after loading from pickle
+ * @param activation Activation function of the network
+ */
+void Network::setActivation(const std::function<double(double)> &activation) {
+    Network::activation = activation;
+
+    for (auto &it: nodes) {
+        it.second->setActivation(activation);
+    }
+}
+
 

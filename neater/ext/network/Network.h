@@ -28,6 +28,8 @@ class Network {
 public:
     Network(int inputs, int outputs);
 
+    Network(int inputs, int outputs, const std::function<double(double)> &activation);
+
     static Network load(std::vector<int> inputNodes,
                         std::vector<int> outputNodes,
                         std::vector<Node> nodes,
@@ -61,6 +63,10 @@ public:
 
     int getEdgeInnovationNumber() const;
 
+    const std::function<double(double)> &getActivation() const;
+
+    void setActivation(const std::function<double(double)> &activation);
+
 private:
     std::unordered_map<std::pair<int, int>, std::shared_ptr<Edge>, hash_pair> edges;
     std::unordered_map<int, std::shared_ptr<Node>> nodes;
@@ -74,6 +80,7 @@ private:
     int inputs;
     int outputs;
 
+    std::function<double(double)> activation;
 };
 
 

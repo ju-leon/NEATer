@@ -6,17 +6,11 @@
 
 #include "../include/Node.h"
 
-double clamped(double input) {
-    if (input < -1) {
-        return -1;
-    } else if (input > 1) {
-        return 1;
-    } else {
-        return input;
-    }
+double identity(double input) {
+    return input;
 }
 
-Node::Node(int id, double bias) : id(id) {
+Node::Node(int id, double bias, const std::function<double(double)> &activation) : id(id), activation(activation) {
     Node::bias = bias;
     Node::cached = false;
     Node::active = false;
@@ -24,6 +18,7 @@ Node::Node(int id, double bias) : id(id) {
 }
 
 Node::Node(int id) : id(id) {
+    Node::activation = identity;
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
@@ -31,11 +26,28 @@ Node::Node(int id) : id(id) {
 }
 
 Node::Node() : id(-1) {
+    Node::activation = identity;
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
     Node::cache = 0;
 }
+
+Node::Node(int id, const std::function<double(double)> &activation) : id(id), activation(activation) {
+    Node::bias = 0;
+    Node::cached = false;
+    Node::active = false;
+    Node::cache = 0;
+}
+
+Node::Node(int id, double bias) : id(id), bias(bias) {
+    Node::activation = identity;
+    Node::bias = 0;
+    Node::cached = false;
+    Node::active = false;
+    Node::cache = 0;
+}
+
 
 double Node::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
@@ -47,7 +59,7 @@ double Node::call() {
             for (it = connections.begin(); it != connections.end(); it++) {
                 result += (*it)->call();
             }
-            cache = clamped(result);
+            cache = Node::activation(result);
 
         } else {
             cache = 0;
@@ -129,3 +141,13 @@ std::ostream &operator<<(std::ostream &os, const Node &node) {
 void Node::resetConnections() {
     connections.clear();
 }
+
+const std::function<double(double)> &Node::getActivation() const {
+    return activation;
+}
+
+void Node::setActivation(const std::function<double(double)> &activation) {
+    Node::activation = activation;
+}
+
+

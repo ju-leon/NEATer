@@ -210,6 +210,9 @@ int Genome::mutateDisableNode() {
     return -1;
 }
 
+/**
+ * Applies the genomes weights to the network so the network can be evaluated.
+ */
 void Genome::apply() {
     for (auto &it: nodeGenes) {
         it.apply();
@@ -219,6 +222,11 @@ void Genome::apply() {
     }
 }
 
+/**
+ * Crossbreeds two genomes
+ * @param genome Genome to breed with
+ * @return The generated child of the two genomes
+ */
 Genome Genome::crossbreed(const Genome &genome) {
     auto gen = std::bind(std::uniform_int_distribution<>(0, 1), std::default_random_engine());
 
@@ -257,6 +265,15 @@ Genome Genome::crossbreed(const Genome &genome) {
     return child;
 }
 
+/**
+ * Computes the distance between 2 genomes
+ * @param genome Genome to compare to
+ * @param threshold TODO
+ * @param c1 TODO
+ * @param c2 TODO
+ * @param c3 TODO
+ * @return Distance
+ */
 double Genome::distance(const Genome &genome, int threshold, double c1, double c2, double c3) {
 
     int numDisjoint = 0;
@@ -308,6 +325,12 @@ const std::vector<NodeGene> &Genome::getNodeGenes() const {
     return nodeGenes;
 }
 
+/**
+ * Constructs a new genome after pickling
+ * @param network The network the genome should operate on
+ * @param nodeGenes List of node genes
+ * @param edgeGenes List of edge genes
+ */
 Genome::Genome(const std::shared_ptr<Network> &network, const std::vector<std::tuple<int, double, bool>> &nodeGenes,
                const std::vector<std::tuple<int, int, double, bool>> &edgeGenes) : network(network) {
 

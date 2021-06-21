@@ -11,9 +11,20 @@
 
 using namespace std;
 
+double clamped(double x) {
+    if (x > 1) {
+        return 1;
+    } else if (x < -1) {
+        return -1;
+    } else {
+        return x;
+    }
+}
+
+
 int main() {
 
-    shared_ptr<Network> net = make_shared<Network>(2, 2);
+    shared_ptr<Network> net = make_shared<Network>(2, 2, clamped);
 
     auto genome = Genome(net);
     auto genome2 = Genome(net);
