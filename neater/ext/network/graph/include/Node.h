@@ -8,6 +8,7 @@
 #include <vector>
 #include <ostream>
 #include <memory>
+#include <functional>
 
 #include "Edge.h"
 

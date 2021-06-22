@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include <memory>
+#include <functional>
 
 #include "../include/Node.h"
 

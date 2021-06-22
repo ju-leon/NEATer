@@ -6,6 +6,7 @@
 #include <memory>
 #include <unordered_map>
 #include <cassert>
+#include <functional>
 
 #include "graph/include/Edge.h"
 
@@ -122,7 +123,7 @@ Network::registerNode(int inId, int outId) {
     std::shared_ptr<Edge> rightEdge;
     if (edge->getMutateToNode() == -1) {
         int id = nodeInnovationNumber++;
-        nodes[id] = std::make_unique<Node>(id, activation);
+        nodes[id] = std::make_shared<Node>(id, activation);
         middleNode = nodes[id];
 
         std::pair<int, int> leftKey(inId, middleNode->getId());

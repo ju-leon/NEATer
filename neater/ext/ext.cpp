@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 #include <memory>
+#include <functional>
 
 #include "network/Network.h"
 #include "graph/include/Node.h"
@@ -186,7 +187,7 @@ PYBIND11_MODULE(_neat, m)
             return "<neater.NodeGene id=" + std::to_string(a.getId()) + ">";
         });
 
-    
+
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())
         .def(py::init<std::shared_ptr<Network>,

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <functional>
 
 struct hash_pair {
     template<class T1, class T2>
