@@ -5,3 +5,4 @@ networkx==2.5
 torch==1.8.1
 matplotlib==3.3.4
 gym==0.18.3
+tensorflow==2.5.0
