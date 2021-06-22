@@ -2,6 +2,7 @@ import unittest
 import pickle
 import os
 import shutil
+from tensorflow import nn
 
 from _neat import Network, Node, Edge
 
@@ -16,7 +17,7 @@ class CNetworkTest(unittest.TestCase):
         shutil.rmtree("tests/temp/")
 
     def test_save_network(self):
-        net = Network(3, 5)
+        net = Network(3, 5, nn.relu)
         edge = net.register_edge(1, 4)
         edge.active = True
         edge.weight = -1

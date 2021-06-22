@@ -1,4 +1,5 @@
 import unittest
+from torch import nn
 
 from _neat import Network, Node, Edge
 from _neat import Genome, NodeGene, EdgeGene
@@ -7,7 +8,7 @@ from _neat import Genome, NodeGene, EdgeGene
 class CGenomeTest(unittest.TestCase):
 
     def test_pointers(self):
-        net = Network(2, 4)
+        net = Network(2, 4, nn.ReLU())
 
         edge1 = net.register_edge(0, 2)
 

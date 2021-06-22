@@ -1,11 +1,11 @@
 import unittest
+from tensorflow import nn
 
 from _neat import Network, Node, Edge
 
-
 class CNetworkTest(unittest.TestCase):
     def test_node(self):
-        node = Node(2, 0.5)
+        node = Node(2, 0.5, nn.relu)
         self.assertEqual(node.get_id(), 2)
         self.assertEqual(node.bias, 0.5)
 
@@ -13,8 +13,8 @@ class CNetworkTest(unittest.TestCase):
         self.assertEqual(node.bias, -0.4)
 
     def test_edge(self):
-        node_in = Node(0, 0.5)
-        node_out = Node(0, 0.5)
+        node_in = Node(0, 0.5, nn.relu)
+        node_out = Node(0, 0.5, nn.relu)
 
         edge = Edge(3, node_in, node_out)
         self.assertEqual(edge.get_id(), 3)
@@ -25,7 +25,7 @@ class CNetworkTest(unittest.TestCase):
         self.assertEqual(edge.active, False)
 
     def test_register_edge(self):
-        net = Network(3, 3)
+        net = Network(3, 3, nn.relu)
         edge = net.register_edge(0, 3)
         edge.active = True
         edge.weight = 1
@@ -43,7 +43,7 @@ class CNetworkTest(unittest.TestCase):
         self.assertIsNone(net.register_edge(5, 5))
 
     def test_register_node(self):
-        net = Network(2, 2)
+        net = Network(2, 2, nn.relu)
         edge_left, node, edge_right = net.register_node(0, 3)
         self.assertIsNone(edge_left)
         self.assertIsNone(node)
@@ -62,7 +62,7 @@ class CNetworkTest(unittest.TestCase):
         self.assertEqual(edge, net.register_edge(nodeMiddle.get_id(), 3))
 
     def test_forward(self):
-        net = Network(2, 4)
+        net = Network(2, 4, nn.relu)
 
         edge1 = net.register_edge(0, 2)
         edge2 = net.register_edge(1, 3)
