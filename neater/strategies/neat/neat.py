@@ -11,7 +11,7 @@ import numpy as np
 from tqdm import tqdm
 import random
 from operator import attrgetter
-from torch import nn 
+from tensorflow import keras
 
 import pickle
 # TODO: MOVE TO TENSORFLOW ACTIVATION
@@ -24,7 +24,6 @@ class Neat(Strategy):
 
         self.population_size = kwargs.get('population_size', 100)
         self.max_genetic_distance = kwargs.get('max_genetic_distance', 5)
-
 
         self.kwargs = kwargs
 
@@ -196,13 +195,13 @@ class Neat(Strategy):
 
                 # For each node gene, save the id of the corresponding node and the state
                 node_list = []
-                for node_gene in genome.genome.node_genes():
+                for node_gene in genome.genome.get_node_genes():
                     node_list.append(
                         (node_gene.get_id(), node_gene.bias, node_gene.disabled))
 
                 # For each edge gene, save the id of the corresponding input and output nodes and the state
                 edge_list = []
-                for edge_gene in genome.genome.edge_genes():
+                for edge_gene in genome.genome.get_edge_genes():
                     edge_list.append(
                         (edge_gene.get_edge().get_input().get_id(), edge_gene.get_edge().get_output().get_id(), edge_gene.weight, edge_gene.disabled))
 
@@ -222,12 +221,12 @@ class Neat(Strategy):
                 best_genome_index = (-1, genome_index)
 
             node_list = []
-            for node_gene in genome.genome.node_genes():
+            for node_gene in genome.genome.get_node_genes():
                 node_list.append(
                     (node_gene.get_id(), node_gene.bias, node_gene.disabled))
 
             edge_list = []
-            for edge_gene in genome.genome.edge_genes():
+            for edge_gene in genome.genome.get_edge_genes():
                 edge_list.append(
                     (edge_gene.get_edge().get_input().get_id(), edge_gene.get_edge().get_output().get_id(), edge_gene.weight, edge_gene.disabled))
 
@@ -247,7 +246,7 @@ class Neat(Strategy):
 
         neat.network = network
         network.set_activation(kwargs.get("activation"))
-        
+
         neat.discrete = discrete
 
         species_index = 0
@@ -287,3 +286,68 @@ class Neat(Strategy):
             genome_index += 1
 
         return neat
+
+    def to_keras(self):
+        self.best_genome.apply()
+        self.network.compute_dependencies()
+
+        node_genes = self.best_genome.genome.get_node_genes()
+        node_gene_ids = []
+        for node_gene in node_genes:
+            node_gene_ids.append(node_gene.get_id())
+
+        layers = []
+        for x in range(len(node_genes)):
+            layers.append([])
+
+        for node_gene in node_genes:
+            layer = node_gene.get_node().get_dependency_layer()
+            if layer >= 0:
+                layers[layer].append(node_gene.get_id())
+
+        # Remove all empty layers
+        layers = [layer for layer in layers if layer != []]
+
+        input = keras.Input(shape=(len(layers[0]),))
+
+        node_ids = []
+        for input_node_gene in layers[0]:
+            node_ids.append(input_node_gene)
+
+        skip_connections = input
+        for layer in layers[1:]:
+            dense_layer = keras.layers.Dense(len(layer), activation='relu',
+                                             kernel_initializer='zeros',
+                                             bias_initializer='zeros')
+            x = dense_layer(skip_connections)
+            skip_connections = keras.layers.Concatenate()(
+                [x, skip_connections])
+
+            weights, bias = dense_layer.get_weights()
+
+            layer_ids = []
+
+            node_ids += layer
+            for node_id in layer:
+
+                for con in node_genes[node_gene_ids.index(node_id)].get_node().get_connections():
+                    if con.active:
+                        weights[node_ids.index(con.get_input().get_id())][layer.index(
+                            con.get_output().get_id())] = con.weight
+                        bias[layer.index(con.get_output().get_id())
+                             ] = con.get_output().bias
+
+            dense_layer.set_weights([weights, bias])
+
+        output_layer = keras.layers.Dense(
+            self.network.get_outputs(), activation=None, kernel_initializer='zeros', bias_initializer='zeros')
+        output = output_layer(skip_connections)
+
+        weights, _ = output_layer.get_weights()
+        for node, index in zip(self.network.get_output_nodes(), range(self.network.get_outputs())):
+            if node.get_id() in node_ids:
+                weights[node_ids.index(node.get_id())][index] = 1
+
+        model = keras.Model(input, output, name="NEAT_resnet")
+
+        return model

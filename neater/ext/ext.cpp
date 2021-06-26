@@ -23,6 +23,8 @@ PYBIND11_MODULE(_neat, m)
         .def_property("active", &Node::isActive, &Node::setActive)
         .def("get_layer", &Node::getDependencyLayer)
         .def("get_id", &Node::getId)
+        .def("get_connections", &Node::getConnections)
+        .def("get_dependency_layer", &Node::getDependencyLayer)
         .def(py::pickle(
                 [](const Node &n) {
                     return py::make_tuple(n.getId(), n.getBias(), n.isActive());
@@ -102,6 +104,8 @@ PYBIND11_MODULE(_neat, m)
     py::class_<Network, std::shared_ptr<Network>>(m, "Network")
         .def(py::init<int, int, std::function<double(double)>>())
         .def("forward", &Network::forward)
+        .def("get_inputs", &Network::getInputs)
+        .def("get_outputs", &Network::getOutputs)
         .def("register_node", &Network::registerNode)
         .def("register_edge", &Network::registerEdge)
         .def("get_input_nodes", &Network::getInputNodes)
@@ -204,8 +208,8 @@ PYBIND11_MODULE(_neat, m)
         .def("mutate_disable_node", &Genome::mutateDisableNode)
         .def("crossbreed", &Genome::crossbreed)
         .def("distance", &Genome::distance)
-        .def("edge_genes", &Genome::getEdgeGenes)
-        .def("node_genes", &Genome::getNodeGenes)
+        .def("get_edge_genes", &Genome::getEdgeGenes)
+        .def("get_node_genes", &Genome::getNodeGenes)
         .def("apply", &Genome::apply);
 
 

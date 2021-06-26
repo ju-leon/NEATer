@@ -27,3 +27,7 @@ class Strategy():
     @abc.abstractmethod
     def load(path: str, env: Env):
         pass
+
+    @abc.abstractmethod
+    def to_keras(self):
+        pass

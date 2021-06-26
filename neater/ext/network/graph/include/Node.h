@@ -68,7 +68,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
-
+    const std::vector<std::shared_ptr<Edge>> &getConnections() const;
 };
 
 #endif

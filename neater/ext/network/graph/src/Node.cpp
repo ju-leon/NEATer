@@ -151,4 +151,8 @@ void Node::setActivation(const std::function<double(double)> &activation) {
     Node::activation = activation;
 }
 
+const std::vector<std::shared_ptr<Edge>> &Node::getConnections() const {
+    return connections;
+}
+
 
