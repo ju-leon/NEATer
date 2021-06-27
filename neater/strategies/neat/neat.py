@@ -1,19 +1,23 @@
-from numpy.core.fromnumeric import argmax
-from neater.strategies.neat.species import Species
-from _neat import Network, Genome
-from neater.strategies.neat.genome import GenomeWrapper
-from random import choice
-
-from neater.strategies.strategy import Strategy
-from itertools import zip_longest
-import copy
-import numpy as np
-from tqdm import tqdm
-import random
-from operator import attrgetter
-from tensorflow import keras
-
+import networkx as nx
 import pickle
+from tensorflow import keras
+from operator import attrgetter
+import random
+from tqdm import tqdm
+import numpy as np
+import copy
+from itertools import zip_longest
+from neater.strategies.strategy import Strategy
+from random import choice
+from neater.strategies.neat.genome import GenomeWrapper
+from _neat import Network, Genome
+from neater.strategies.neat.species import Species
+from numpy.core.fromnumeric import argmax
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
+
+
 # TODO: MOVE TO TENSORFLOW ACTIVATION
 
 
@@ -173,8 +177,8 @@ class Neat(Strategy):
         return self.network
 
     def predict_best(self, x: np.array):
-        self.network.reset()
-        self.best_genome.apply()
+        # self.network.reset()
+        # self.best_genome.apply()
         return self.network.forward(x)
 
     def save(self, path):
@@ -292,17 +296,21 @@ class Neat(Strategy):
         self.network.compute_dependencies()
 
         node_genes = self.best_genome.genome.get_node_genes()
+
         node_gene_ids = []
         for node_gene in node_genes:
             node_gene_ids.append(node_gene.get_id())
 
         layers = []
-        for x in range(len(node_genes)):
+        for x in range(max([x.get_node().get_dependency_layer() for x in node_genes]) + 1):
             layers.append([])
+
+        print("Node Genes: " + str(len(node_genes)))
 
         for node_gene in node_genes:
             layer = node_gene.get_node().get_dependency_layer()
             if layer >= 0:
+                print(layer)
                 layers[layer].append(node_gene.get_id())
 
         # Remove all empty layers
@@ -316,7 +324,7 @@ class Neat(Strategy):
 
         skip_connections = input
         for layer in layers[1:]:
-            dense_layer = keras.layers.Dense(len(layer), activation='relu',
+            dense_layer = keras.layers.Dense(len(layer), activation='softmax',
                                              kernel_initializer='zeros',
                                              bias_initializer='zeros')
             x = dense_layer(skip_connections)
@@ -329,25 +337,96 @@ class Neat(Strategy):
 
             node_ids += layer
             for node_id in layer:
-
                 for con in node_genes[node_gene_ids.index(node_id)].get_node().get_connections():
                     if con.active:
                         weights[node_ids.index(con.get_input().get_id())][layer.index(
-                            con.get_output().get_id())] = con.weight
-                        bias[layer.index(con.get_output().get_id())
-                             ] = con.get_output().bias
+                            node_id)] = con.weight
+                        bias[layer.index(node_id)] = con.get_output().bias
 
+            print(weights)
+            print(bias)
             dense_layer.set_weights([weights, bias])
 
         output_layer = keras.layers.Dense(
             self.network.get_outputs(), activation=None, kernel_initializer='zeros', bias_initializer='zeros')
         output = output_layer(skip_connections)
 
-        weights, _ = output_layer.get_weights()
+        weights, zeros = output_layer.get_weights()
         for node, index in zip(self.network.get_output_nodes(), range(self.network.get_outputs())):
             if node.get_id() in node_ids:
                 weights[node_ids.index(node.get_id())][index] = 1
 
+            output_layer.set_weights([weights, zeros])
+
+        print(weights)
+
         model = keras.Model(input, output, name="NEAT_resnet")
 
         return model
+
+    def plot(self, path):
+        self.best_genome.apply()
+        self.network.compute_dependencies()
+
+        node_genes = self.best_genome.genome.get_node_genes()
+
+        layers = []
+        for x in range(max([x.get_node().get_dependency_layer() for x in node_genes]) + 1):
+            layers.append([])
+
+        node_gene_ids = []
+        for node_gene in node_genes:
+            node_gene_ids.append(node_gene.get_id())
+            layer = node_gene.get_node().get_dependency_layer()
+            if layer >= 0:
+                layers[layer].append(node_gene.get_id())
+
+        # Remove all empty layers
+        layers = [layer for layer in layers if layer != []]
+
+        G = nx.Graph()
+
+        for index, layer in zip(range(len(layers)), layers):
+            for node_id in layer:
+                G.add_node(node_id, layer=index)
+                for con in node_genes[node_gene_ids.index(node_id)].get_node().get_connections():
+                    if con.active:
+                        G.add_edge(con.get_input().get_id(),
+                                   con.get_output().get_id(), weight=round(con.weight, 3))
+
+        for node, index in zip(self.network.get_output_nodes(), range(self.network.get_outputs())):
+            G.add_node("output_" +
+                       str(node.get_id()), layer=len(layers) + 1)
+
+            if not node.get_id() in G.nodes:
+                G.add_node(node.get_id(), layer=len(layers))
+
+            G.add_edge(node.get_id(), "output_" +
+                       str(node.get_id()), weight=1)
+
+        # Remove unconnected nodes
+        to_be_removed = [x for x in G.nodes() if G.degree(
+            x) == 0 and x >= self.network.get_inputs()]
+        for x in to_be_removed:
+            G.remove_node(x)
+
+        # Position start and end nodes
+        pos = nx.multipartite_layout(G, subset_key="layer")
+
+        # Optional spring layout between the layers
+        #fixed_nodes = []
+        #fixed_nodes += list(range(self.network.get_inputs()))
+        # for node in self.network.get_output_nodes():
+        #    fixed_nodes.append("output_" + str(node.get_id()))
+        #pos = nx.spring_layout(G, pos=pos, fixed=fixed_nodes, weight='weight')
+
+        plt.figure(figsize=(8, 8))
+        nx.draw(G, pos, with_labels=True)
+
+        labels = nx.get_edge_attributes(G, 'weight')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+
+        plt.axis("equal")
+        plt.savefig(path)
+        plt.show()
+        plt.close()
