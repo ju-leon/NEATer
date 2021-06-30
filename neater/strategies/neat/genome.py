@@ -49,6 +49,9 @@ class GenomeWrapper():
 
         if decide(self.p_mutate_bias):
             self.mutate_bias_shift()
+            
+        if decide(self.p_mutate_bias):
+            self.mutate_bias_random()
 
         if decide(self.p_mutate_toggle_node):
             self.mutate_disable_node()

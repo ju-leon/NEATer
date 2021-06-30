@@ -32,6 +32,10 @@ Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
 
 Network::Network(int inputs, int outputs, const std::function<float(float)> &activation) : Network(inputs, outputs) {
     Network::activation = activation;
+
+    for (auto node : outputNodes) {
+        node->setActivation(activation);
+    }
 }
 
 const std::vector<std::shared_ptr<Node>> &Network::getOutputNodes() const {
@@ -151,6 +155,7 @@ Network::registerNode(int inId, int outId) {
 
     return std::make_tuple(leftEdge, middleNode, rightEdge);
 }
+
 /**
  * Predicts a single sample by passing it through the network.
  * Assumes that a genome has been called first to set the weights of the network.

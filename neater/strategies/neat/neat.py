@@ -310,8 +310,9 @@ class Neat(Strategy):
         for node_gene in node_genes:
             layer = node_gene.get_node().get_dependency_layer()
             if layer >= 0:
-                print(layer)
                 layers[layer].append(node_gene.get_id())
+
+            print("Node={}, bias={}".format(node_gene.get_id(), node_gene.get_node().bias))
 
         # Remove all empty layers
         layers = [layer for layer in layers if layer != []]
@@ -324,12 +325,12 @@ class Neat(Strategy):
 
         skip_connections = input
         for layer in layers[1:]:
-            dense_layer = keras.layers.Dense(len(layer), activation='softmax',
+            dense_layer = keras.layers.Dense(len(layer), activation='relu',
                                              kernel_initializer='zeros',
                                              bias_initializer='zeros')
             x = dense_layer(skip_connections)
             skip_connections = keras.layers.Concatenate()(
-                [x, skip_connections])
+                [skip_connections, x])
 
             weights, bias = dense_layer.get_weights()
 
@@ -341,7 +342,8 @@ class Neat(Strategy):
                     if con.active:
                         weights[node_ids.index(con.get_input().get_id())][layer.index(
                             node_id)] = con.weight
-                        bias[layer.index(node_id)] = con.get_output().bias
+
+                bias[layer.index(node_id)] = node_genes[node_gene_ids.index(node_id)].get_node().bias
 
             print(weights)
             print(bias)
