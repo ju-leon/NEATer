@@ -30,7 +30,7 @@ Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
 }
 
 
-Network::Network(int inputs, int outputs, const std::function<double(double)> &activation) : Network(inputs, outputs) {
+Network::Network(int inputs, int outputs, const std::function<float(float)> &activation) : Network(inputs, outputs) {
     Network::activation = activation;
 }
 
@@ -157,7 +157,7 @@ Network::registerNode(int inId, int outId) {
  * @param x Sample
  * @return Result
  */
-std::vector<double> Network::forward(std::vector<double> x) {
+std::vector<float> Network::forward(std::vector<float> x) {
     assert(x.size() == inputNodes.size());
 
     for (auto &it: nodes) {
@@ -172,7 +172,7 @@ std::vector<double> Network::forward(std::vector<double> x) {
         inputNodes[i]->setValue(x[i]);
     }
 
-    std::vector<double> result;
+    std::vector<float> result;
     result.reserve(outputNodes.size());
 
     for (std::size_t i = 0; i < outputNodes.size(); ++i) {
@@ -278,7 +278,7 @@ Network Network::load(std::vector<int> inputNodes,
     return net;
 }
 
-const std::function<double(double)> &Network::getActivation() const {
+const std::function<float(float)> &Network::getActivation() const {
     return activation;
 }
 
@@ -286,7 +286,7 @@ const std::function<double(double)> &Network::getActivation() const {
  * Used to set the networks activation after loading from pickle
  * @param activation Activation function of the network
  */
-void Network::setActivation(const std::function<double(double)> &activation) {
+void Network::setActivation(const std::function<float(float)> &activation) {
     Network::activation = activation;
 
     for (auto &it: nodes) {

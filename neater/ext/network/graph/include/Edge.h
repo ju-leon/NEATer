@@ -16,7 +16,7 @@ class Edge {
 private:
     std::shared_ptr<Node> inputNode;
     std::shared_ptr<Node> outputNode;
-    double weight;
+    float weight;
     bool active;
     int id;
     int mutateToNode = -1;
@@ -25,11 +25,11 @@ public:
 
     Edge(int id, std::shared_ptr<Node>, std::shared_ptr<Node>);
 
-    double call();
+    float call();
 
-    double getWeight() const;
+    float getWeight() const;
 
-    void setWeight(double weight);
+    void setWeight(float weight);
 
     bool isActive() const;
 

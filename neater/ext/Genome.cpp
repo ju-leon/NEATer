@@ -68,7 +68,7 @@ Genome::Genome(const std::shared_ptr<Network> &network) : network(network), edge
  * @param bias Bias assigned to new node
  * @return 0 if a node was successfully mutated, -1 otherwise
  */
-int Genome::mutateNode(double bias) {
+int Genome::mutateNode(float bias) {
     if (!edgeGenes.empty()) {
         auto edgeGene = *select_randomly(edgeGenes.begin(), edgeGenes.end());
 
@@ -115,7 +115,7 @@ int Genome::mutateNode(double bias) {
  * @param weight Weight assigned to the new edge.
  * @return 0 if an edge was successfully inserted, -1 otherwise
  */
-int Genome::mutateEdge(double weight) {
+int Genome::mutateEdge(float weight) {
     //TODO: Com dependencies once before all genomes can mutate
     network->computeDependencies();
 
@@ -145,7 +145,7 @@ int Genome::mutateEdge(double weight) {
     return -1;
 }
 
-int Genome::mutateWeightShift(double weight) {
+int Genome::mutateWeightShift(float weight) {
     if (!edgeGenes.empty()) {
         auto edgeGene = select_randomly(edgeGenes.begin(), edgeGenes.end());
 
@@ -156,7 +156,7 @@ int Genome::mutateWeightShift(double weight) {
     return -1;
 }
 
-int Genome::mutateWeightRandom(double weight) {
+int Genome::mutateWeightRandom(float weight) {
     if (!edgeGenes.empty()) {
         auto edgeGene = select_randomly(edgeGenes.begin(), edgeGenes.end());
 
@@ -177,7 +177,7 @@ int Genome::mutateToggleConnection() {
     return -1;
 }
 
-int Genome::mutateBiasShift(double bias) {
+int Genome::mutateBiasShift(float bias) {
     if (!nodeGenes.empty()) {
         auto nodeGene = select_randomly(nodeGenes.begin(), nodeGenes.end());
 
@@ -188,7 +188,7 @@ int Genome::mutateBiasShift(double bias) {
     return -1;
 }
 
-int Genome::mutateBiasRandom(double bias) {
+int Genome::mutateBiasRandom(float bias) {
     if (!nodeGenes.empty()) {
         auto nodeGene = select_randomly(nodeGenes.begin(), nodeGenes.end());
 
@@ -274,10 +274,10 @@ Genome Genome::crossbreed(const Genome &genome) {
  * @param c3 TODO
  * @return Distance
  */
-double Genome::distance(const Genome &genome, int threshold, double c1, double c2, double c3) {
+float Genome::distance(const Genome &genome, int threshold, float c1, float c2, float c3) {
 
     int numDisjoint = 0;
-    double weightDiff = 0;
+    float weightDiff = 0;
 
     int index1 = 0;
     int index2 = 0;
@@ -331,8 +331,8 @@ const std::vector<NodeGene> &Genome::getNodeGenes() const {
  * @param nodeGenes List of node genes
  * @param edgeGenes List of edge genes
  */
-Genome::Genome(const std::shared_ptr<Network> &network, const std::vector<std::tuple<int, double, bool>> &nodeGenes,
-               const std::vector<std::tuple<int, int, double, bool>> &edgeGenes) : network(network) {
+Genome::Genome(const std::shared_ptr<Network> &network, const std::vector<std::tuple<int, float, bool>> &nodeGenes,
+               const std::vector<std::tuple<int, int, float, bool>> &edgeGenes) : network(network) {
 
     auto &nodes = network->getNodes();
     for (auto &nodeGeneTuple: nodeGenes) {

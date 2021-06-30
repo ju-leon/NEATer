@@ -18,7 +18,7 @@ PYBIND11_MODULE(_neat, m)
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     py::class_<Node, std::shared_ptr<Node>>(m, "Node")
-        .def(py::init<int, double, std::function<double(double)>>())
+        .def(py::init<int, float, std::function<float(float)>>())
         .def_property("bias", &Node::getBias, &Node::setBias)
         .def_property("active", &Node::isActive, &Node::setActive)
         .def("get_layer", &Node::getDependencyLayer)
@@ -33,7 +33,7 @@ PYBIND11_MODULE(_neat, m)
                     if (t.size() != 3)
                         throw std::runtime_error("Invalid state!");
 
-                    Node node(t[0].cast<int>(), t[1].cast<double>());
+                    Node node(t[0].cast<int>(), t[1].cast<float>());
                     node.setActive(t[2].cast<bool>());
                     return node;
                 }
@@ -88,7 +88,7 @@ PYBIND11_MODULE(_neat, m)
 
                     Edge edge(t[0].cast<int>(), t[1].cast<std::shared_ptr<Node>>(), t[2].cast<std::shared_ptr<Node>>());
 
-                    edge.setWeight(t[3].cast<double>());
+                    edge.setWeight(t[3].cast<float>());
                     edge.setActive(t[4].cast<bool>());
                     edge.setMutateToNode(t[5].cast<int>());
 
@@ -102,7 +102,7 @@ PYBIND11_MODULE(_neat, m)
 
     // Include Network
     py::class_<Network, std::shared_ptr<Network>>(m, "Network")
-        .def(py::init<int, int, std::function<double(double)>>())
+        .def(py::init<int, int, std::function<float(float)>>())
         .def("forward", &Network::forward)
         .def("get_inputs", &Network::getInputs)
         .def("get_outputs", &Network::getOutputs)
@@ -195,8 +195,8 @@ PYBIND11_MODULE(_neat, m)
     py::class_<Genome, std::shared_ptr<Genome>>(m, "Genome")
         .def(py::init<std::shared_ptr<Network>>())
         .def(py::init<std::shared_ptr<Network>,
-                std::vector<std::tuple<int, double, bool>>,
-                std::vector<std::tuple<int, int, double, bool>>
+                std::vector<std::tuple<int, float, bool>>,
+                std::vector<std::tuple<int, int, float, bool>>
                 >())
         .def("mutate_node", &Genome::mutateNode)
         .def("mutate_edge", &Genome::mutateEdge)

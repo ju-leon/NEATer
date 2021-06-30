@@ -16,29 +16,29 @@ class Edge;
 
 class Node {
     std::vector<std::shared_ptr<Edge>> connections;
-    double bias;
+    float bias;
 
     bool active;
     int id;
 
-    double cache;
+    float cache;
     bool cached;
 
     int dependencyLayer = -1;
 
-    std::function<double(double)> activation;
+    std::function<float(float)> activation;
 public:
     Node();
 
     Node(int id);
 
-    Node(int id, const std::function<double(double)> &activation);
+    Node(int id, const std::function<float(float)> &activation);
 
-    Node(int id, double bias, const std::function<double(double)> &activation);
+    Node(int id, float bias, const std::function<float(float)> &activation);
 
-    Node(int id, double bias);
+    Node(int id, float bias);
 
-    virtual double call();
+    virtual float call();
 
     virtual void resetCache();
 
@@ -58,13 +58,13 @@ public:
 
     int getId() const;
 
-    double getBias() const;
+    float getBias() const;
 
-    void setBias(double bias);
+    void setBias(float bias);
 
-    const std::function<double(double)> &getActivation() const;
+    const std::function<float(float)> &getActivation() const;
 
-    void setActivation(const std::function<double(double)> &activation);
+    void setActivation(const std::function<float(float)> &activation);
 
     friend std::ostream &operator<<(std::ostream &os, const Node &node);
 

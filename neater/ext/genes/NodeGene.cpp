@@ -10,11 +10,11 @@ NodeGene::NodeGene(std::shared_ptr<Node> node) {
 }
 
 
-double NodeGene::getBias() const {
+float NodeGene::getBias() const {
     return bias;
 }
 
-void NodeGene::setBias(double bias) {
+void NodeGene::setBias(float bias) {
     NodeGene::bias = bias;
 }
 
@@ -43,10 +43,10 @@ int NodeGene::getId() const {
     return node->getId();
 }
 
-NodeGene::NodeGene(double bias, bool disabled) : bias(bias), disabled(disabled) {
+NodeGene::NodeGene(float bias, bool disabled) : bias(bias), disabled(disabled) {
     NodeGene::node = nullptr;
 }
 
-NodeGene::NodeGene(const std::shared_ptr<Node> &node, double bias, bool disabled) : node(node), bias(bias),
+NodeGene::NodeGene(const std::shared_ptr<Node> &node, float bias, bool disabled) : node(node), bias(bias),
                                                                                     disabled(disabled) {}
 

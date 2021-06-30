@@ -11,15 +11,15 @@
 
 class NodeGene {
     std::shared_ptr<Node> node;
-    double bias = 0;
+    float bias = 0;
     bool disabled;
 public:
 
     NodeGene(std::shared_ptr<Node> node);
 
-    NodeGene(const std::shared_ptr<Node> &node, double bias, bool disabled);
+    NodeGene(const std::shared_ptr<Node> &node, float bias, bool disabled);
 
-    NodeGene(double bias, bool disabled);
+    NodeGene(float bias, bool disabled);
 
     const std::shared_ptr<Node> &getNode() const;
 
@@ -27,9 +27,9 @@ public:
 
     void setNode(const std::shared_ptr<Node> &node);
 
-    double getBias() const;
+    float getBias() const;
 
-    void setBias(double bias);
+    void setBias(float bias);
 
     bool isDisabled() const;
 

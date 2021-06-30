@@ -7,11 +7,11 @@
 
 #include "../include/InputNode.h"
 
-double InputNode::call() {
+float InputNode::call() {
     return value;
 }
 
-void InputNode::setValue(double x) {
+void InputNode::setValue(float x) {
     value = x;
 }
 

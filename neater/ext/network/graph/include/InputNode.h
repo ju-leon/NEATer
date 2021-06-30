@@ -9,14 +9,14 @@
 #include "Node.h"
 
 class InputNode : public Node {
-    double value;
+    float value;
 
 public:
     InputNode() {};
 
     InputNode(int id) : Node{id} {};
 
-    double call() override;
+    float call() override;
 
     int computeDependencyLayer() override;
 
@@ -24,7 +24,7 @@ public:
 
     void resetCache() override;
 
-    void setValue(double);
+    void setValue(float);
 
 };
 

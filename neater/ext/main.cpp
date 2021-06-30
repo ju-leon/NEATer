@@ -11,7 +11,7 @@
 
 using namespace std;
 
-double clamped(double x) {
+float clamped(float x) {
     if (x > 1) {
         return 1;
     } else if (x < -1) {
@@ -66,13 +66,13 @@ int main() {
 
     cout << net.registerEdge(2, 0) << endl;
 
-    vector<double> vec;
+    vector<float> vec;
     vec.push_back(10);
     vec.push_back(0.2);
     vec.push_back(1.0);
 
     auto result = net.forward(vec);
-    for (std::vector<double>::const_iterator i = result.begin(); i != result.end(); ++i) {
+    for (std::vector<float>::const_iterator i = result.begin(); i != result.end(); ++i) {
         std::cout << *i << ' ';
     }
 

@@ -15,9 +15,9 @@ Edge::Edge(int id, std::shared_ptr<Node> in, std::shared_ptr<Node> out) : id(id)
     active = false;
 }
 
-double Edge::call() {
+float Edge::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
-    double result = 0;
+    float result = 0;
     if (active) {
         result = weight * inputNode->call();
     }
@@ -25,11 +25,11 @@ double Edge::call() {
     return result;
 }
 
-double Edge::getWeight() const {
+float Edge::getWeight() const {
     return weight;
 }
 
-void Edge::setWeight(double weight) {
+void Edge::setWeight(float weight) {
     Edge::weight = weight;
 }
 

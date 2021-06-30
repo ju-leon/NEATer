@@ -20,22 +20,22 @@ public:
     Genome(const std::shared_ptr<Network> &network);
 
     Genome(const std::shared_ptr<Network> &network,
-           const std::vector<std::tuple<int, double, bool>> &nodeGenes,
-           const std::vector<std::tuple<int, int, double, bool>> &edgeGenes);
+           const std::vector<std::tuple<int, float, bool>> &nodeGenes,
+           const std::vector<std::tuple<int, int, float, bool>> &edgeGenes);
 
-    int mutateNode(double bias);
+    int mutateNode(float bias);
 
-    int mutateEdge(double weight);
+    int mutateEdge(float weight);
 
-    int mutateWeightShift(double weight);
+    int mutateWeightShift(float weight);
 
-    int mutateWeightRandom(double weight);
+    int mutateWeightRandom(float weight);
 
     int mutateToggleConnection();
 
-    int mutateBiasShift(double bias);
+    int mutateBiasShift(float bias);
 
-    int mutateBiasRandom(double bias);
+    int mutateBiasRandom(float bias);
 
     int mutateDisableNode();
 
@@ -47,7 +47,7 @@ public:
 
     Genome crossbreed(const Genome &genome);
 
-    double distance(const Genome &genome, int threshold, double c1, double c2, double c3);
+    float distance(const Genome &genome, int threshold, float c1, float c2, float c3);
 
     void appendNodeGene(const NodeGene &gene);
 

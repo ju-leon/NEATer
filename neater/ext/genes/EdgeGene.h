@@ -10,13 +10,13 @@
 
 class EdgeGene {
     std::shared_ptr<Edge> edge;
-    double weight = 0;
+    float weight = 0;
     bool disabled;
 
 public:
     explicit EdgeGene(std::shared_ptr<Edge> edge);
 
-    EdgeGene(const std::shared_ptr<Edge> &edge, double weight, bool disabled);
+    EdgeGene(const std::shared_ptr<Edge> &edge, float weight, bool disabled);
 
     void setEdge(const std::shared_ptr<Edge> &edge);
 
@@ -24,9 +24,9 @@ public:
 
     void apply();
 
-    double getWeight() const;
+    float getWeight() const;
 
-    void setWeight(double weight);
+    void setWeight(float weight);
 
     bool isDisabled() const;
 

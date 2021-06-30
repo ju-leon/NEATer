@@ -7,11 +7,11 @@
 
 #include "../include/Node.h"
 
-double identity(double input) {
+float identity(float input) {
     return input;
 }
 
-Node::Node(int id, double bias, const std::function<double(double)> &activation) : id(id), activation(activation) {
+Node::Node(int id, float bias, const std::function<float(float)> &activation) : id(id), activation(activation) {
     Node::bias = bias;
     Node::cached = false;
     Node::active = false;
@@ -34,14 +34,14 @@ Node::Node() : id(-1) {
     Node::cache = 0;
 }
 
-Node::Node(int id, const std::function<double(double)> &activation) : id(id), activation(activation) {
+Node::Node(int id, const std::function<float(float)> &activation) : id(id), activation(activation) {
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
     Node::cache = 0;
 }
 
-Node::Node(int id, double bias) : id(id), bias(bias) {
+Node::Node(int id, float bias) : id(id), bias(bias) {
     Node::activation = identity;
     Node::bias = 0;
     Node::cached = false;
@@ -50,12 +50,12 @@ Node::Node(int id, double bias) : id(id), bias(bias) {
 }
 
 
-double Node::call() {
+float Node::call() {
     // Only compute if the function has not been cached. Prevents unnecessary recursions
     if (!cached) {
         if (active) {
 
-            double result = bias;
+            float result = bias;
             std::vector<std::shared_ptr<Edge>>::iterator it;
             for (it = connections.begin(); it != connections.end(); it++) {
                 result += (*it)->call();
@@ -125,11 +125,11 @@ int Node::getDependencyLayer() {
     return dependencyLayer;
 }
 
-double Node::getBias() const {
+float Node::getBias() const {
     return bias;
 }
 
-void Node::setBias(double bias) {
+void Node::setBias(float bias) {
     Node::bias = bias;
 }
 
@@ -143,11 +143,11 @@ void Node::resetConnections() {
     connections.clear();
 }
 
-const std::function<double(double)> &Node::getActivation() const {
+const std::function<float(float)> &Node::getActivation() const {
     return activation;
 }
 
-void Node::setActivation(const std::function<double(double)> &activation) {
+void Node::setActivation(const std::function<float(float)> &activation) {
     Node::activation = activation;
 }
 
