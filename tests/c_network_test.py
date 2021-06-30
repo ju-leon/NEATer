@@ -1,4 +1,5 @@
 import unittest
+import numpy as np
 from tensorflow import nn
 
 from _neat import Network, Node, Edge
@@ -7,10 +8,10 @@ class CNetworkTest(unittest.TestCase):
     def test_node(self):
         node = Node(2, 0.5, nn.relu)
         self.assertEqual(node.get_id(), 2)
-        self.assertEqual(node.bias, 0.5)
+        self.assertAlmostEqual(node.bias, 0.5)
 
         node.bias = -0.4
-        self.assertEqual(node.bias, -0.4)
+        self.assertAlmostEqual(node.bias, -0.4)
 
     def test_edge(self):
         node_in = Node(0, 0.5, nn.relu)
@@ -18,10 +19,10 @@ class CNetworkTest(unittest.TestCase):
 
         edge = Edge(3, node_in, node_out)
         self.assertEqual(edge.get_id(), 3)
-        self.assertEqual(edge.weight, 0)
+        self.assertAlmostEqual(edge.weight, 0)
 
         edge.weight = 1.25
-        self.assertEqual(edge.weight, 1.25)
+        self.assertAlmostEqual(edge.weight, 1.25)
         self.assertEqual(edge.active, False)
 
     def test_register_edge(self):
@@ -30,9 +31,10 @@ class CNetworkTest(unittest.TestCase):
         edge.active = True
         edge.weight = 1
 
-        self.assertEqual(net.forward([1, 0, 0]), [1, 0, 0])
-        self.assertEqual(net.forward([1, 1, 0]), [1, 0, 0])
-        self.assertEqual(net.forward([1, 0, 1]), [1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 0, 0]), [1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1, 0]), [1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 0, 1]), [1, 0, 0])
+
         self.assertEqual(net.register_edge(0, 3), edge)
 
         edge.active = False
@@ -67,20 +69,20 @@ class CNetworkTest(unittest.TestCase):
         edge1 = net.register_edge(0, 2)
         edge2 = net.register_edge(1, 3)
 
-        self.assertEqual(net.forward([1, 1]), [0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [0, 0, 0, 0])
 
         edge1.active = True
         edge1.weight = 1
-        self.assertEqual(net.forward([1, 1]), [1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0, 0, 0])
 
         edge2.active = True
         edge2.weight = 1
-        self.assertEqual(net.forward([1, 1]), [1, 1, 0, 0])
-        self.assertEqual(net.forward([1, -1]), [1, -1, 0, 0])
-        self.assertEqual(net.forward([1, 0.5]), [1, 0.5, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, -1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 0.5]), [1, 0.5, 0, 0])
 
         edge2.weight = 0.1
-        self.assertEqual(net.forward([1, 1]), [1, 0.1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.1, 0, 0])
 
         edgeLeft, nodeMiddle, edgeRight = net.register_node(1, 3)
         edgeLeft.active = True
@@ -91,22 +93,22 @@ class CNetworkTest(unittest.TestCase):
 
         nodeMiddle.active = True
 
-        self.assertEqual(net.forward([1, 1]), [1, 0.1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.1, 0, 0])
 
         edgeInternal = net.register_edge(nodeMiddle.get_id(), 4)
         edgeInternal.active = True
         edgeInternal.weight = 1
 
-        self.assertEqual(net.forward([1, 1]), [1, 0.1, 1, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.1, 1, 0])
 
         edgeRight.active = True
         nodeMiddle.bias = 1
 
-        self.assertEqual(net.forward([1, 1]), [1, 2.1, 2, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 2.1, 2, 0])
 
         nodeMiddle.active = False
 
-        self.assertEqual(net.forward([1, 1]), [1, 0.1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.1, 0, 0])
 
 
 if "__main__" == __name__:
