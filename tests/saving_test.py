@@ -3,6 +3,7 @@ import pickle
 import os
 import shutil
 from tensorflow import nn
+import numpy as np
 
 from _neat import Network, Node, Edge
 
@@ -20,9 +21,13 @@ class CNetworkTest(unittest.TestCase):
         net = Network(3, 5, nn.relu)
         edge = net.register_edge(1, 4)
         edge.active = True
-        edge.weight = -1
+        edge.weight = 0.5
 
-        self.assertEqual(net.forward([1, 1, 1]), [0, -1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 1, 0]), [0, 0.5, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 0, 1]), [0, 0, 0, 0, 0])
 
         with open("tests/temp/net.neat", "wb") as file:
             pickle.dump(net, file)
@@ -32,7 +37,11 @@ class CNetworkTest(unittest.TestCase):
         with open("tests/temp/net.neat", "rb") as file:
             net = pickle.load(file)
 
-        self.assertEqual(net.forward([1, 1, 1]), [0, -1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 1, 0]), [0, 0.5, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, 0, 0]), [0, 0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, 0, 1]), [0, 0, 0, 0, 0])
 
 
 if "__main__" == __name__:

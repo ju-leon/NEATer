@@ -78,7 +78,7 @@ class CNetworkTest(unittest.TestCase):
         edge2.active = True
         edge2.weight = 1
         np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 1, 0, 0])
-        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, -1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([1, 0.5]), [1, 0.5, 0, 0])
 
         edge2.weight = 0.1
@@ -110,6 +110,18 @@ class CNetworkTest(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.1, 0, 0])
 
+
+    def test_activation(self):
+        net = Network(2, 4, nn.relu)
+
+        edge1 = net.register_edge(0, 2)
+        edge2 = net.register_edge(1, 3)
+
+        edge1.active = True
+        edge1.weight = 1
+
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, 1]), [0, 0, 0, 0])
 
 if "__main__" == __name__:
     unittest.main()
