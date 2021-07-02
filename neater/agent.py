@@ -14,14 +14,14 @@ class Agent():
         self.discrete = discrete
 
         self.strategy = strategy
-        self.strategy.init_population(env, input_shape, output_shape)
+        self.strategy.init_population(env, input_shape, output_shape, discrete)
 
-    def solve(self, max_generations=10, epoch_len=100, increase_rate=0, goal='min', reward_offset=0, render=False):
+    def solve(self, max_generations=10, epoch_len=100, increase_rate=0, goal='min', render=False):
         for generation in range(max_generations):
             data = self.strategy.solve_epoch(
-                epoch_len, reward_offset, render)
-
-            print("Generation {}/{}: Best={}, Average={}, Species={}".format(
+                epoch_len, render)
+            
+            print("\nGeneration {}/{}: Best={}, Average={}, Species={}".format(
                 generation, max_generations,
                 np.max(data["rewards"]),
                 np.mean(data["rewards"]),

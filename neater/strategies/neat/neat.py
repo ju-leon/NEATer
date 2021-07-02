@@ -14,11 +14,8 @@ from _neat import Network, Genome
 from neater.strategies.neat.species import Species
 from numpy.core.fromnumeric import argmax
 import matplotlib
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
-
-
-# TODO: MOVE TO TENSORFLOW ACTIVATION
 
 
 class Neat(Strategy):
@@ -41,7 +38,6 @@ class Neat(Strategy):
         input_size = input_shape  # .flatten()
         output_size = output_shape  # .flatten()
 
-        # TODO: Pass AF, self.activation)
         self.network = Network(input_size, output_size, self.activation)
 
         self.unassigned_genomes = []
@@ -56,7 +52,7 @@ class Neat(Strategy):
             genome.mutate()
             self.species[0].add_genome(genome)
 
-    def solve_epoch(self, epoch_len, offset, render=False):
+    def solve_epoch(self, epoch_len, render=False):
 
         # Reset the best genome every generation. This is important in gyms with randomness
         self.best_genome = None
@@ -64,7 +60,7 @@ class Neat(Strategy):
         # Evaluate all species
         rewards = []
         for species in self.species:
-            reward = species.evaluate(epoch_len, offset, render)
+            reward = species.evaluate(epoch_len, render)
             rewards.append(reward)
 
             if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:
@@ -77,6 +73,15 @@ class Neat(Strategy):
                 len(species.genomes),
             ))
 
+        rewards = np.array(rewards)
+
+        # OpenAi often uses negative rewards(punishments) which will affect the shared species rewards.
+        # Fixed by allways setting the lowest reward of any species to 0
+        min_reward = np.min(rewards)
+        for species in self.species:
+            species.fitness = (species.fitness_max -
+                               min_reward) / len(species.genomes)
+
         # Assign all individuals to their species
         self.assign_species()
         self.kill_underperformer()
@@ -86,7 +91,7 @@ class Neat(Strategy):
         self.mutate()
 
         data = dict()
-        data["rewards"] = np.array(rewards)
+        data["rewards"] = rewards
         data["num_species"] = len(self.species)
 
         return data
@@ -141,7 +146,7 @@ class Neat(Strategy):
 
         if unassigned_genomes != []:
             collector_species = Species(
-                self.network, self.env, unassigned_genomes.pop())
+                self.network, self.env, unassigned_genomes.pop(), self.discrete)
 
             for genome in unassigned_genomes:
                 collector_species.genomes.append(genome)
@@ -168,7 +173,8 @@ class Neat(Strategy):
                     break
 
             if not assigned:
-                new_species = Species(self.network, self.env, genome)
+                new_species = Species(
+                    self.network, self.env, genome, self.discrete)
                 self.species.append(new_species)
 
     def get_best_network(self):
@@ -312,7 +318,8 @@ class Neat(Strategy):
             if layer >= 0:
                 layers[layer].append(node_gene.get_id())
 
-            print("Node={}, bias={}".format(node_gene.get_id(), node_gene.get_node().bias))
+            print("Node={}, bias={}".format(
+                node_gene.get_id(), node_gene.get_node().bias))
 
         # Remove all empty layers
         layers = [layer for layer in layers if layer != []]
@@ -343,7 +350,8 @@ class Neat(Strategy):
                         weights[node_ids.index(con.get_input().get_id())][layer.index(
                             node_id)] = con.weight
 
-                bias[layer.index(node_id)] = node_genes[node_gene_ids.index(node_id)].get_node().bias
+                bias[layer.index(node_id)] = node_genes[node_gene_ids.index(
+                    node_id)].get_node().bias
 
             print(weights)
             print(bias)

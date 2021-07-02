@@ -13,7 +13,7 @@ class Strategy():
         pass
 
     @abc.abstractmethod
-    def solve_epoch(self, epoch_len: int, offset: float, render: bool = False) -> dict:
+    def solve_epoch(self, epoch_len: int, render: bool = False) -> dict:
         pass
 
     @abc.abstractmethod

@@ -26,7 +26,7 @@ class Species():
     def add_genome(self, genome) -> None:
         self.genomes.append(genome)
 
-    def evaluate(self, epoch_len, offset=0, render=False):
+    def evaluate(self, epoch_len, render=False):
         """
         Evaluate the fitness of all genomes in the species.
         """
@@ -35,12 +35,11 @@ class Species():
         for genome in self.genomes:
             self.network.reset()
             genome.apply()
-            current_reward = offset
+            current_reward = 0
 
             observation = self.env.reset()
             for _ in range(epoch_len):
                 pred = self.network.forward(observation)
-                # print(pred)
 
                 if self.discrete:
                     pred = np.argmax(pred)
@@ -58,8 +57,6 @@ class Species():
             self.fitness += current_reward
 
         self.fitness = self.fitness / len(self.genomes)
-        if self.fitness < 0:
-            print("\033[93m Warning: Negative rewards are harmful to species performance. Please specify an offset to prevent negative rewards. \033[0m")
 
         return self.fitness
 
