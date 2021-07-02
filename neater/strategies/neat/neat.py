@@ -14,13 +14,21 @@ from _neat import Network, Genome
 from neater.strategies.neat.species import Species
 from numpy.core.fromnumeric import argmax
 import matplotlib
-#matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
 
 class Neat(Strategy):
 
     def __init__(self, **kwargs) -> None:
+        """Creates a new Neat population
+
+        Inits a new neat population. Accepts tuning parameters for evolving genomes later. The parameters are passed down into the genomes
+
+        Parameters:
+            activation (float->float): Activation function
+            population_size (int): Population size (default is 100)
+        """ 
         self.activation = kwargs.get('activation')
 
         self.population_size = kwargs.get('population_size', 100)
