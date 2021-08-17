@@ -16,7 +16,7 @@ from numpy.core.fromnumeric import argmax
 import matplotlib
 # matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
-
+from matplotlib import cm
 
 class Neat(Strategy):
 
@@ -28,7 +28,7 @@ class Neat(Strategy):
         Parameters:
             activation (float->float): Activation function
             population_size (int): Population size (default is 100)
-        """ 
+        """
         self.activation = kwargs.get('activation')
 
         self.population_size = kwargs.get('population_size', 100)
@@ -382,7 +382,7 @@ class Neat(Strategy):
 
         return model
 
-    def plot(self, path):
+    def plot(self, path, labels=False):
         self.best_genome.apply()
         self.network.compute_dependencies()
 
@@ -438,13 +438,17 @@ class Neat(Strategy):
         #    fixed_nodes.append("output_" + str(node.get_id()))
         #pos = nx.spring_layout(G, pos=pos, fixed=fixed_nodes, weight='weight')
 
-        plt.figure(figsize=(8, 8))
-        nx.draw(G, pos, with_labels=True)
+        edges = G.edges()
+        weights = [G[u][v]['weight'] for u, v in edges]
 
-        labels = nx.get_edge_attributes(G, 'weight')
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+        plt.figure()#figsize=(8, 8))
+        nx.draw(G, pos, with_labels=labels, node_shape=">",
+                node_color="#1c1c1c", edge_cmap=cm.get_cmap('RdBu'), node_size=20, edge_color=weights)
+
+        if labels:
+            labels = nx.get_edge_attributes(G, 'weight')
+            nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 
         plt.axis("equal")
-        plt.savefig(path)
-        plt.show()
+        plt.savefig(path, bbox_inches='tight')
         plt.close()
