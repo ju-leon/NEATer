@@ -340,7 +340,7 @@ class Neat(Strategy):
 
         skip_connections = input
         for layer in layers[1:]:
-            dense_layer = keras.layers.Dense(len(layer), activation='relu',
+            dense_layer = keras.layers.Dense(len(layer), activation=self.activation,
                                              kernel_initializer='zeros',
                                              bias_initializer='zeros')
             x = dense_layer(skip_connections)
