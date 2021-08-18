@@ -7,6 +7,7 @@
 NodeGene::NodeGene(std::shared_ptr<Node> node) {
     NodeGene::node = node;
     disabled = false;
+    bias = 0;
 }
 
 
@@ -48,5 +49,5 @@ NodeGene::NodeGene(float bias, bool disabled) : bias(bias), disabled(disabled) {
 }
 
 NodeGene::NodeGene(const std::shared_ptr<Node> &node, float bias, bool disabled) : node(node), bias(bias),
-                                                                                    disabled(disabled) {}
+                                                                                   disabled(disabled) {}
 

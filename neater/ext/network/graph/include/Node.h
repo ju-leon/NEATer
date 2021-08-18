@@ -33,7 +33,7 @@ public:
 
     Node(int id);
 
-    Node(int id, const std::function<float(float)> &activation);
+    Node(int id, std::function<float(float)> activation);
 
     Node(int id, float bias, const std::function<float(float)> &activation);
 

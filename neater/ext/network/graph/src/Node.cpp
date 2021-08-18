@@ -30,7 +30,7 @@ Node::Node() : id(-1) {
     Node::cache = 0;
 }
 
-Node::Node(int id, const std::function<float(float)> &activation) : id(id), activation(activation) {
+Node::Node(int id, std::function<float(float)> activation) : id(id), activation(std::move(activation)) {
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
@@ -57,7 +57,6 @@ float Node::call() {
                 result += (*it)->call();
             }
             cache = Node::activation(result);
-
         } else {
             cache = 0;
         }

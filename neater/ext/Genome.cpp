@@ -48,6 +48,22 @@ struct compareNodeGenes {
     }
 };
 
+struct compareTwoEdgeGenes {
+    bool operator()(const EdgeGene &gene1,
+                    const EdgeGene &gene2) {
+        return (gene1.getId() < gene2.getId());
+    }
+
+};
+
+struct compareTwoNodeGenes {
+    bool operator()(const NodeGene &gene1,
+                    const NodeGene &gene2) {
+        return (gene1.getId() < gene2.getId());
+    }
+
+};
+
 
 Genome::Genome(const std::shared_ptr<Network> &network) : network(network), edgeGenes() {
 
@@ -75,30 +91,31 @@ int Genome::mutateNode(float bias) {
         auto tuple = network->registerNode(edgeGene.getEdge()->getInputNode()->getId(),
                                            edgeGene.getEdge()->getOutputNode()->getId());
 
-        auto edgeLeft = std::get<0>(tuple);
-        auto nodeMiddle = std::get<1>(tuple);
-        auto edgeRight = std::get<2>(tuple);
+        EdgeGene edgeLeft = EdgeGene(std::get<0>(tuple));
+        NodeGene nodeMiddle = NodeGene(std::get<1>(tuple));
+        EdgeGene edgeRight = EdgeGene(std::get<2>(tuple));
 
         if (!std::binary_search(std::begin(edgeGenes),
                                 std::end(edgeGenes),
                                 edgeLeft,
-                                compareEdgeGenes())) {
+                                compareTwoEdgeGenes())) {
+            edgeLeft.setWeight(edgeGene.getWeight());
             edgeGenes.emplace_back(edgeLeft);
-            edgeGenes.back().setWeight(edgeGene.getWeight());
         }
 
-        if (std::binary_search(std::begin(edgeGenes),
-                               std::end(edgeGenes),
-                               edgeRight,
-                               compareEdgeGenes())) {
+        if (!std::binary_search(std::begin(edgeGenes),
+                                std::end(edgeGenes),
+                                edgeRight,
+                                compareTwoEdgeGenes())) {
+            edgeRight.setWeight(1);
             edgeGenes.emplace_back(edgeRight);
-            edgeGenes.back().setWeight(1);
         }
 
-        if (std::binary_search(std::begin(nodeGenes),
-                               std::end(nodeGenes),
-                               nodeMiddle,
-                               compareNodeGenes())) {
+        if (!std::binary_search(std::begin(nodeGenes),
+                                std::end(nodeGenes),
+                                nodeMiddle,
+                                compareTwoNodeGenes())) {
+            nodeMiddle.setBias(bias);
             nodeGenes.emplace_back(nodeMiddle);
         }
 

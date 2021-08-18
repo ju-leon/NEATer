@@ -7,6 +7,7 @@
 EdgeGene::EdgeGene(std::shared_ptr<Edge> edge) {
     EdgeGene::edge = edge;
     disabled = false;
+    weight = 0;
 }
 
 const std::shared_ptr<Edge> &EdgeGene::getEdge() const {
@@ -43,4 +44,4 @@ void EdgeGene::setEdge(const std::shared_ptr<Edge> &edge) {
 }
 
 EdgeGene::EdgeGene(const std::shared_ptr<Edge> &edge, float weight, bool disabled) : edge(edge), weight(weight),
-                                                                                      disabled(disabled) {}
+                                                                                     disabled(disabled) {}
