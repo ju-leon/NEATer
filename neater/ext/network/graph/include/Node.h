@@ -15,6 +15,7 @@
 class Edge;
 
 class Node {
+
     std::vector<std::shared_ptr<Edge>> connections;
     float bias;
 
@@ -26,11 +27,15 @@ class Node {
 
     int dependencyLayer = -1;
 
+    bool isOutput = false;
+
     std::function<float(float)> activation;
 public:
     Node();
 
     Node(int id);
+
+    Node(int id, bool output);
 
     Node(int id, const std::function<float(float)> &activation);
 
@@ -69,6 +74,10 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
     const std::vector<std::shared_ptr<Edge>> &getConnections() const;
+
+    bool isOutput1() const;
+
+    void setIsOutput(bool isOutput);
 };
 
 #endif

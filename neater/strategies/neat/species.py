@@ -31,7 +31,7 @@ class Species():
         Evaluate the fitness of all genomes in the species.
         """
         self.fitness = 0
-        self.fitness_max = 0.0
+        self.fitness_max = float("-inf")
         for genome in self.genomes:
             self.network.reset()
             genome.apply()
@@ -104,4 +104,4 @@ class Species():
         return self.fitness < other.fitness
 
     def __repr__(self):
-        return "Species: genomes={}, fitness={}".format(len(self.genomes), self.fitness)
+        return "Species: genomes={:10.3f}, fitness={:10.3f}".format(len(self.genomes), self.fitness)

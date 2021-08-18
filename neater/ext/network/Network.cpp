@@ -24,7 +24,7 @@ Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
 
     for (int i = 0; i < outputs; i++) {
         int id = nodeInnovationNumber++;
-        nodes[id] = std::shared_ptr<Node>(new Node(id));
+        nodes[id] = std::shared_ptr<Node>(new Node(id, true));
         outputNodes.emplace_back(nodes[id]);
     }
 }
@@ -264,6 +264,7 @@ Network Network::load(std::vector<int> inputNodes,
 
     for (int id: outputNodes) {
         net.outputNodes.emplace_back(net.nodes[id]);
+        net.outputNodes.back()->setIsOutput(true);
     }
 
 

@@ -18,6 +18,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import cm
 
+
 class Neat(Strategy):
 
     def __init__(self, **kwargs) -> None:
@@ -74,8 +75,7 @@ class Neat(Strategy):
             if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:
                 self.best_genome = species.genomes[0]
 
-            print("Best Genome: {}, Population Fitness: {}, Max Fitness: {}, Size: {}".format(
-                species.genomes[0].fitness,
+            print("- Species Fitness: {:6.3f}, Best Genome: {:6.3f}, Size: {}".format(
                 species.fitness,
                 species.fitness_max,
                 len(species.genomes),
@@ -441,7 +441,7 @@ class Neat(Strategy):
         edges = G.edges()
         weights = [G[u][v]['weight'] for u, v in edges]
 
-        plt.figure()#figsize=(8, 8))
+        plt.figure()  # figsize=(8, 8))
         nx.draw(G, pos, with_labels=labels, node_shape=">",
                 node_color="#1c1c1c", edge_cmap=cm.get_cmap('RdBu'), node_size=20, edge_color=weights)
 

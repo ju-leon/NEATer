@@ -64,6 +64,7 @@ class CNetworkTest(unittest.TestCase):
         self.assertEqual(edge, net.register_edge(nodeMiddle.get_id(), 3))
 
     def test_forward(self):
+        # Output nodes do not apply an activation function
         net = Network(2, 4, nn.relu)
 
         edge1 = net.register_edge(0, 2)
@@ -78,7 +79,7 @@ class CNetworkTest(unittest.TestCase):
         edge2.active = True
         edge2.weight = 1
         np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 1, 0, 0])
-        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, -1, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([1, 0.5]), [1, 0.5, 0, 0])
 
         edge2.weight = 0.1
@@ -112,6 +113,7 @@ class CNetworkTest(unittest.TestCase):
 
 
     def test_activation(self):
+        # Test activation being applied to all but the output nodes
         net = Network(2, 4, nn.relu)
 
         edge1 = net.register_edge(0, 2)
@@ -121,7 +123,23 @@ class CNetworkTest(unittest.TestCase):
         edge1.weight = 1
 
         np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0, 0, 0])
-        np.testing.assert_array_almost_equal(net.forward([-1, 1]), [0, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, 1]), [-1, 0, 0, 0])
+
+        edgeLeft, nodeMiddle, edgeRight = net.register_node(1, 3)
+
+        edgeLeft.active = True
+        edgeLeft.weight = 1
+
+        nodeMiddle.active = True
+
+        edgeRight.active = True
+        edgeRight.weight = 1
+
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, 1]), [-1, 1, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([-1, -1]), [-1, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, -1]), [1, 0, 0, 0])
+
 
 if "__main__" == __name__:
     unittest.main()

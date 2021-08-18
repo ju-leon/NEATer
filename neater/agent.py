@@ -21,7 +21,7 @@ class Agent():
             data = self.strategy.solve_epoch(
                 epoch_len, render)
             
-            print("\nGeneration {}/{}: Best={}, Average={}, Species={}".format(
+            print("\n\nGeneration {}/{}  ---  Best:{:6.2f}, Average:{:6.2f}, Species alive: {}".format(
                 generation, max_generations,
                 np.max(data["rewards"]),
                 np.mean(data["rewards"]),
