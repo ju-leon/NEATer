@@ -7,10 +7,6 @@
 
 #include "../include/Node.h"
 
-float identity(float input) {
-    return input;
-}
-
 Node::Node(int id, float bias, const std::function<float(float)> &activation) : id(id), activation(activation) {
     Node::bias = bias;
     Node::cached = false;
@@ -19,24 +15,15 @@ Node::Node(int id, float bias, const std::function<float(float)> &activation) : 
 }
 
 Node::Node(int id) : id(id) {
-    Node::activation = identity;
+    Node::activation = nullptr;
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
     Node::cache = 0;
-}
-
-Node::Node(int id, bool output) : id(id) {
-    Node::activation = identity;
-    Node::bias = 0;
-    Node::cached = false;
-    Node::active = false;
-    Node::cache = 0;
-    Node::isOutput = output;
 }
 
 Node::Node() : id(-1) {
-    Node::activation = identity;
+    Node::activation = nullptr;
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
@@ -51,7 +38,7 @@ Node::Node(int id, const std::function<float(float)> &activation) : id(id), acti
 }
 
 Node::Node(int id, float bias) : id(id), bias(bias) {
-    Node::activation = identity;
+    Node::activation = nullptr;
     Node::bias = 0;
     Node::cached = false;
     Node::active = false;
@@ -69,11 +56,7 @@ float Node::call() {
             for (it = connections.begin(); it != connections.end(); it++) {
                 result += (*it)->call();
             }
-            if (!isOutput) {
-                cache = Node::activation(result);
-            } else {
-                cache = result;
-            }
+            cache = Node::activation(result);
 
         } else {
             cache = 0;
@@ -168,12 +151,5 @@ const std::vector<std::shared_ptr<Edge>> &Node::getConnections() const {
     return connections;
 }
 
-bool Node::isOutput1() const {
-    return isOutput;
-}
-
-void Node::setIsOutput(bool isOutput) {
-    Node::isOutput = isOutput;
-}
 
 

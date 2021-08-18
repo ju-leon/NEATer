@@ -263,7 +263,7 @@ class Neat(Strategy):
         neat = Neat(**kwargs)
 
         neat.network = network
-        network.set_activation(kwargs.get("activation"))
+        neat.network.set_activation(kwargs.get("activation"))
 
         neat.discrete = discrete
 

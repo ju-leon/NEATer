@@ -10,6 +10,10 @@
 
 #include "graph/include/Edge.h"
 
+float identity(float input) {
+    return input;
+}
+
 Network::Network(int inputs, int outputs) : inputs(inputs), outputs(outputs) {
     edgeInnovationNumber = 0;
     nodeInnovationNumber = 0;
@@ -34,7 +38,7 @@ Network::Network(int inputs, int outputs, const std::function<float(float)> &act
     Network::activation = activation;
 
     for (auto node : outputNodes) {
-        node->setActivation(activation);
+        node->setActivation(identity);
     }
 }
 
@@ -264,7 +268,6 @@ Network Network::load(std::vector<int> inputNodes,
 
     for (int id: outputNodes) {
         net.outputNodes.emplace_back(net.nodes[id]);
-        net.outputNodes.back()->setIsOutput(true);
     }
 
 
@@ -298,6 +301,11 @@ void Network::setActivation(const std::function<float(float)> &activation) {
     for (auto &it: nodes) {
         it.second->setActivation(activation);
     }
+
+    for (auto node: outputNodes) {
+        node->setActivation(identity);
+    }
+
 }
 
 
