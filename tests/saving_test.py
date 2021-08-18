@@ -24,6 +24,7 @@ class CNetworkTest(unittest.TestCase):
         edge.weight = 0.5
 
         np.testing.assert_array_almost_equal(net.forward([0, 1, 0]), [0, 0.5, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, -1, 0]), [0, -0.5, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([0, 0, 0]), [0, 0, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([1, 0, 0]), [0, 0, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([-1, 0, 0]), [0, 0, 0, 0, 0])
@@ -38,6 +39,7 @@ class CNetworkTest(unittest.TestCase):
             net = pickle.load(file)
 
         np.testing.assert_array_almost_equal(net.forward([0, 1, 0]), [0, 0.5, 0, 0, 0])
+        np.testing.assert_array_almost_equal(net.forward([0, -1, 0]), [0, -0.5, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([0, 0, 0]), [0, 0, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([1, 0, 0]), [0, 0, 0, 0, 0])
         np.testing.assert_array_almost_equal(net.forward([-1, 0, 0]), [0, 0, 0, 0, 0])
