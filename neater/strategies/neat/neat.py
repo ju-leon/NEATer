@@ -1,3 +1,4 @@
+from os import kill
 import networkx as nx
 import pickle
 from tensorflow import keras
@@ -35,11 +36,16 @@ class Neat(Strategy):
         self.population_size = kwargs.get('population_size', 100)
         self.max_genetic_distance = kwargs.get('max_genetic_distance', 5)
 
+        self.kill_percentage = kwargs.get('kill_percentage', 0.5)
+
+        self.p_mutation = kwargs.get('p_mutation', 0.8)
+
+        self.fitness_decay = kwargs.get('fitness_decay', 0.8)
+
         self.kwargs = kwargs
 
         self.species = []
         self.unassigned_genomes = []
-        self.best_genome = None
 
     def init_population(self, env, input_shape, output_shape, discrete=True) -> None:
         self.env = env
@@ -62,6 +68,8 @@ class Neat(Strategy):
             self.species[0].add_genome(genome)
 
     def solve_epoch(self, epoch_len, render=False):
+        data = dict()
+        data["species"] = dict()
 
         # Reset the best genome every generation. This is important in gyms with randomness
         self.best_genome = None
@@ -72,8 +80,22 @@ class Neat(Strategy):
             reward = species.evaluate(epoch_len, render)
             rewards.append(reward)
 
-            if self.best_genome == None or species.genomes[0].fitness >= self.best_genome.fitness:
-                self.best_genome = species.genomes[0]
+        rewards = np.array(rewards)
+
+        self.kill_underperformer()
+
+        # OpenAi often uses negative rewards(punishments) which will affect the shared species rewards.
+        # Fixed by allways setting the lowest reward of any species to 0
+        # min_reward = np.min(rewards)
+        for species in self.species:
+            fitness = 0
+
+            importance_factor = 1.0
+            for genome in species.genomes:
+                fitness += genome.fitness * importance_factor
+                importance_factor = importance_factor * self.fitness_decay
+
+            species.fitness = fitness
 
             print("- Species Fitness: {:6.3f}, Best Genome: {:6.3f}, Size: {}".format(
                 species.fitness,
@@ -81,35 +103,30 @@ class Neat(Strategy):
                 len(species.genomes),
             ))
 
-        rewards = np.array(rewards)
-
-        # OpenAi often uses negative rewards(punishments) which will affect the shared species rewards.
-        # Fixed by allways setting the lowest reward of any species to 0
-        min_reward = np.min(rewards)
-        for species in self.species:
-            species.fitness = (species.fitness_max -
-                               min_reward) / len(species.genomes)
-
-        # Assign all individuals to their species
-        self.assign_species()
-        self.kill_underperformer()
-        self.remove_extinct_species()
+            data["species"][species.id] = dict()
+            data["species"][species.id]["fitness"] = species.fitness
+            data["species"][species.id]["fitness_max"] = species.fitness
+            data["species"][species.id]["size"] = len(species.genomes)
 
         self.reproduce()
         self.mutate()
 
-        data = dict()
-        data["rewards"] = rewards
+        # Assign all individuals to their species
+        self.assign_species()
+        self.remove_extinct_species()
+
+        data["rewards"] = np.mean(rewards, axis=-1)
         data["num_species"] = len(self.species)
 
         return data
 
     def mutate(self):
         for species in self.species:
-            species.mutate()
+            species.mutate(self.p_mutation)
 
         for genome in self.unassigned_genomes:
-            genome.mutate()
+            if np.random.choice([True, False], p=[self.p_mutation, 1-self.p_mutation]):
+                genome.mutate()
 
     def reproduce(self):
         number_genomes = len(self.unassigned_genomes)
@@ -130,9 +147,9 @@ class Neat(Strategy):
             # Allow every species at least one offspring
             species.reproduce(int(allowed_offspring) + 1)
 
-    def kill_underperformer(self, percentage=0.5):
+    def kill_underperformer(self):
         for species in self.species:
-            species.kill_percentage(percentage)
+            species.kill_percentage(self.kill_percentage)
 
     def remove_extinct_species(self, extinction_threshold=2):
         """
@@ -185,9 +202,18 @@ class Neat(Strategy):
                     self.network, self.env, genome, self.discrete)
                 self.species.append(new_species)
 
+    def get_best_genome(self):
+        best_genome = None
+        for species in self.species:
+            for genome in species.genomes:
+                if best_genome == None or genome.fitness >= best_genome.fitness:
+                    best_genome = genome
+        return best_genome
+
     def get_best_network(self):
+        best_genome = self.get_best_genome()
         self.network.reset()
-        self.best_genome.apply()
+        best_genome.apply()
         return self.network
 
     def predict_best(self, x: np.array):
@@ -281,6 +307,7 @@ class Neat(Strategy):
 
                 # If the current genome was marked as the best, tag it as best genome
                 if best_genome_index == (species_index, genome_index):
+
                     neat.best_genome = genome_wrapper
 
                 species.add_genome(genome_wrapper)
@@ -319,15 +346,10 @@ class Neat(Strategy):
         for x in range(max([x.get_node().get_dependency_layer() for x in node_genes]) + 1):
             layers.append([])
 
-        print("Node Genes: " + str(len(node_genes)))
-
         for node_gene in node_genes:
             layer = node_gene.get_node().get_dependency_layer()
             if layer >= 0:
                 layers[layer].append(node_gene.get_id())
-
-            print("Node={}, bias={}".format(
-                node_gene.get_id(), node_gene.get_node().bias))
 
         # Remove all empty layers
         layers = [layer for layer in layers if layer != []]
@@ -361,8 +383,6 @@ class Neat(Strategy):
                 bias[layer.index(node_id)] = node_genes[node_gene_ids.index(
                     node_id)].get_node().bias
 
-            print(weights)
-            print(bias)
             dense_layer.set_weights([weights, bias])
 
         output_layer = keras.layers.Dense(
@@ -376,17 +396,16 @@ class Neat(Strategy):
 
             output_layer.set_weights([weights, zeros])
 
-        print(weights)
-
         model = keras.Model(input, output, name="NEAT_resnet")
 
         return model
 
     def plot(self, path, labels=False):
-        self.best_genome.apply()
+        best_genome = self.get_best_genome()
+        best_genome.apply()
         self.network.compute_dependencies()
 
-        node_genes = self.best_genome.genome.get_node_genes()
+        node_genes = best_genome.genome.get_node_genes()
 
         layers = []
         for x in range(max([x.get_node().get_dependency_layer() for x in node_genes]) + 1):
@@ -401,6 +420,8 @@ class Neat(Strategy):
 
         # Remove all empty layers
         layers = [layer for layer in layers if layer != []]
+
+        print(layers)
 
         G = nx.Graph()
 
@@ -423,8 +444,12 @@ class Neat(Strategy):
                        str(node.get_id()), weight=1)
 
         # Remove unconnected nodes
-        to_be_removed = [x for x in G.nodes() if G.degree(
-            x) == 0 and x >= self.network.get_inputs()]
+        # to_be_removed = [x for x in G.nodes() if G.degree(
+        #    x) == 0 and x >= self.network.get_inputs()]
+
+        to_be_removed = [node for (node, layer)
+                         in G.nodes(data="layer") if layer == None]
+
         for x in to_be_removed:
             G.remove_node(x)
 
@@ -443,12 +468,11 @@ class Neat(Strategy):
 
         plt.figure()  # figsize=(8, 8))
         nx.draw(G, pos, with_labels=labels, node_shape=">",
-                node_color="#1c1c1c", edge_cmap=cm.get_cmap('RdBu'), node_size=20, edge_color=weights)
+                node_color="#1c1c1c", edge_cmap=cm.get_cmap('coolwarm'), node_size=20, edge_color=weights)
 
         if labels:
             labels = nx.get_edge_attributes(G, 'weight')
             nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 
-        plt.axis("equal")
         plt.savefig(path, bbox_inches='tight')
         plt.close()

@@ -6,6 +6,7 @@ import numpy as np
 from random import choice
 from gym import Env
 import copy
+import uuid
 
 
 def copy_gene(gene):
@@ -23,6 +24,8 @@ class Species():
 
         self.discrete = discrete
 
+        self.id = str(uuid.uuid4())
+
     def add_genome(self, genome) -> None:
         self.genomes.append(genome)
 
@@ -32,6 +35,8 @@ class Species():
         """
         self.fitness = 0
         self.fitness_max = float("-inf")
+
+        genome_fitness = []
         for genome in self.genomes:
             self.network.reset()
             genome.apply()
@@ -53,26 +58,55 @@ class Species():
 
             genome.fitness = current_reward
 
+            genome_fitness.append(current_reward)
+
             self.fitness_max = max(self.fitness_max, current_reward)
             self.fitness += current_reward
 
-        self.fitness = self.fitness / len(self.genomes)
+        # self.fitness = self.fitness / len(self.genomes)
 
-        return self.fitness
+        return genome_fitness
 
-    def reproduce(self, amount):
+    def reproduce(self, amount, stud=True):
         for _ in range(amount):
-            parent1 = choice(self.genomes)
-            parent2 = choice(self.genomes)
+            if stud and len(self.genomes) > 1:
+                """
+                num_genomes = len(self.genomes)
+
+                propa1 = np.linspace(1.3, 0.7, num=num_genomes)
+                propa1 /= np.sum(propa1)
+
+                propa2 = np.linspace(1.3, 0.7, num=num_genomes - 1)
+                propa2 /= np.sum(propa2)
+
+                available = np.arange(0, len(self.genomes))
+
+                index1 = np.random.choice(
+                    available, p=propa1)
+
+                available = np.delete(available, index1)
+
+                index2 = np.random.choice(
+                    available, p=propa2)
+                parent1 = self.genomes[index1]
+                parent2 = self.genomes[index2]
+                """
+                parent1 = self.genomes[0]
+                parent2 = choice(self.genomes)
+
+            else:
+                parent1 = choice(self.genomes)
+                parent2 = choice(self.genomes)
 
             if parent1 != parent2:
                 child = parent1.crossbreed(parent2)
                 if child != None:
                     self.genomes.append(child)
 
-    def mutate(self):
+    def mutate(self, p):
         for genome in self.genomes:
-            genome.mutate()
+            if np.random.choice([True, False], p=[p, 1-p]):
+                genome.mutate()
 
     def reset(self) -> List:
         # Select random element to keep in species
