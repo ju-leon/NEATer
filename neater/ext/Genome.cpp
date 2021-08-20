@@ -421,8 +421,8 @@ Genome::Genome(const std::shared_ptr<Network> &network, const std::vector<std::t
         std::pair<int, int> key(std::get<0>(edgeGeneTuple), std::get<1>(edgeGeneTuple));
         Genome::edgeGenes.emplace_back(
                 EdgeGene(edges.at(key),
-                         std::get<1>(edgeGeneTuple),
-                         std::get<2>(edgeGeneTuple)));
+                         std::get<2>(edgeGeneTuple),
+                         std::get<3>(edgeGeneTuple)));
     }
 
 }
