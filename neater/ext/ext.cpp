@@ -199,6 +199,7 @@ PYBIND11_MODULE(_neat, m)
                 std::vector<std::tuple<int, int, float, bool>>
                 >())
         .def("mutate_node", &Genome::mutateNode)
+        .def("init_node_genes", &Genome::initNodeGenes)
         .def("mutate_edge", &Genome::mutateEdge)
         .def("mutate_weight_shift", &Genome::mutateWeightShift)
         .def("mutate_weight_random", &Genome::mutateWeightRandom)

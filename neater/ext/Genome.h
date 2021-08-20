@@ -52,6 +52,8 @@ public:
     void appendNodeGene(const NodeGene &gene);
 
     void appendEdgeGene(const EdgeGene &gene);
+
+    void initNodeGenes();
 };
 
 

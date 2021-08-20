@@ -69,6 +69,11 @@ Genome::Genome(const std::shared_ptr<Network> &network) : network(network), edge
 
     nodeGenes.reserve(network->getInputNodes().size() + network->getOutputNodes().size());
 
+}
+
+
+void Genome::initNodeGenes() {
+
     for (auto &it: network->getInputNodes()) {
         nodeGenes.emplace_back(it);
     }
@@ -76,7 +81,44 @@ Genome::Genome(const std::shared_ptr<Network> &network) : network(network), edge
     for (auto &it: network->getOutputNodes()) {
         nodeGenes.emplace_back(it);
     }
+}
 
+void findAndInsertEdge(std::vector<EdgeGene> *genes, EdgeGene gene) {
+    // If the gene is smaller than the first entry, emplace at front
+    if (genes->size() == 0 || genes->front().getId() > gene.getId()) {
+        genes->emplace(genes->begin(), gene);
+        return;
+    }
+
+    for (auto it = std::begin(*genes); it != std::end(*genes); ++it) {
+        if (it->getId() == gene.getId()) {
+            return;
+        } else if (it->getId() > gene.getId()) {
+            genes->emplace(it, gene);
+            return;
+        }
+    }
+
+    genes->emplace_back(gene);
+}
+
+void findAndInsertNode(std::vector<NodeGene> *genes, NodeGene gene) {
+    // If the gene is smaller than the first entry, emplace at front
+    if (genes->size() == 0 || genes->front().getId() > gene.getId()) {
+        genes->emplace(genes->begin(), gene);
+        return;
+    }
+
+    for (auto it = std::begin(*genes); it != std::end(*genes); ++it) {
+        if (it->getId() == gene.getId()) {
+            return;
+        } else if (it->getId() > gene.getId()) {
+            genes->emplace(it, gene);
+            return;
+        }
+    }
+
+    genes->emplace_back(gene);
 }
 
 /**
@@ -95,29 +137,15 @@ int Genome::mutateNode(float bias) {
         NodeGene nodeMiddle = NodeGene(std::get<1>(tuple));
         EdgeGene edgeRight = EdgeGene(std::get<2>(tuple));
 
-        if (!std::binary_search(std::begin(edgeGenes),
-                                std::end(edgeGenes),
-                                edgeLeft,
-                                compareTwoEdgeGenes())) {
-            edgeLeft.setWeight(edgeGene.getWeight());
-            edgeGenes.emplace_back(edgeLeft);
-        }
 
-        if (!std::binary_search(std::begin(edgeGenes),
-                                std::end(edgeGenes),
-                                edgeRight,
-                                compareTwoEdgeGenes())) {
-            edgeRight.setWeight(1);
-            edgeGenes.emplace_back(edgeRight);
-        }
+        edgeLeft.setWeight(edgeGene.getWeight());
+        findAndInsertEdge(&edgeGenes, edgeLeft);
 
-        if (!std::binary_search(std::begin(nodeGenes),
-                                std::end(nodeGenes),
-                                nodeMiddle,
-                                compareTwoNodeGenes())) {
-            nodeMiddle.setBias(bias);
-            nodeGenes.emplace_back(nodeMiddle);
-        }
+        edgeRight.setWeight(1);
+        findAndInsertEdge(&edgeGenes, edgeRight);
+
+        nodeMiddle.setBias(bias);
+        findAndInsertNode(&nodeGenes, nodeMiddle);
 
         edgeGene.setDisabled(true);
 
@@ -148,14 +176,10 @@ int Genome::mutateEdge(float weight) {
 
         // Make sure a valid edge is returned
         if (edge) {
-            //Check if edge already in EdgeGene List
-            if (std::binary_search(std::begin(edgeGenes), std::end(edgeGenes), edge, compareEdgeGenes())) {
-                // Edge already exists
-            } else {
-                edgeGenes.emplace_back(edge);
-                edgeGenes.back().setWeight(weight);
-                return 0;
-            }
+            EdgeGene gene = EdgeGene(edge);
+
+            gene.setWeight(weight);
+            findAndInsertEdge(&edgeGenes, gene);
         }
     }
 
@@ -249,8 +273,41 @@ Genome Genome::crossbreed(const Genome &genome) {
 
     Genome child = Genome(network);
 
+    // Crossbreed node genes
     int index1 = 0;
     int index2 = 0;
+    while (index1 < nodeGenes.size() && index2 < genome.nodeGenes.size()) {
+        if (nodeGenes[index1].getId() == genome.nodeGenes[index2].getId()) {
+            if (gen()) {
+                child.appendNodeGene(nodeGenes[index1]);
+            } else {
+                child.appendNodeGene(genome.nodeGenes[index2]);
+            }
+            index1++;
+            index2++;
+        } else if (nodeGenes[index1].getId() < genome.nodeGenes[index2].getId()) {
+            child.appendNodeGene(nodeGenes[index1]);
+            index1++;
+        } else {
+            child.appendNodeGene(genome.nodeGenes[index2]);
+            index2++;
+        }
+    }
+
+    while (index1 < nodeGenes.size()) {
+        child.appendNodeGene(nodeGenes[index1]);
+        index1++;
+    }
+
+    while (index2 < genome.nodeGenes.size()) {
+        child.appendNodeGene(genome.nodeGenes[index2]);
+        index2++;
+    }
+
+
+    // Crossbreed edge genes
+    index1 = 0;
+    index2 = 0;
     while (index1 < edgeGenes.size() && index2 < genome.edgeGenes.size()) {
         if (edgeGenes[index1].getId() == genome.edgeGenes[index2].getId()) {
             if (gen()) {
