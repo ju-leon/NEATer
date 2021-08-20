@@ -93,6 +93,45 @@ class CGenomeTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             net.forward([12, 1]), [12, 0.5])
 
+        genome2.apply()
+        np.testing.assert_array_almost_equal(net.forward([0, 0]), [0, 1])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [-1, 2])
+        np.testing.assert_array_almost_equal(
+            net.forward([1, -2]), [-1, 0])
+        np.testing.assert_array_almost_equal(
+            net.forward([12, 1]), [-12, 2])
+
+        genome1.apply()
+        np.testing.assert_array_almost_equal(net.forward([0, 0]), [0, 0])
+        np.testing.assert_array_almost_equal(net.forward([1, 1]), [1, 0.5])
+        np.testing.assert_array_almost_equal(
+            net.forward([1, -1]), [1, -0.5])
+        np.testing.assert_array_almost_equal(
+            net.forward([12, 1]), [12, 0.5])
+
+        child1 = genome1.crossbreed(genome2)
+        child2 = genome1.crossbreed(genome2)
+        child3 = genome1.crossbreed(genome2)
+
+        child1.mutate_weight_random(-10)
+        child1.mutate_weight_random(-10)
+        child1.mutate_weight_random(-10)
+
+        child2.mutate_weight_random(-10)
+        child2.mutate_weight_random(-10)
+        child2.mutate_weight_random(-10)
+
+        child3.mutate_weight_random(-10)
+        child3.mutate_weight_random(-10)
+        child3.mutate_weight_random(-10)
+
+        child1.mutate_edge(0.5)
+        child2.mutate_edge(0.5)
+        child3.mutate_edge(0.5)
+
+        child1.mutate_node(0.5)
+        child2.mutate_node(0.5)
+        child3.mutate_node(0.5)
 
         genome2.apply()
         np.testing.assert_array_almost_equal(net.forward([0, 0]), [0, 1])
