@@ -53,7 +53,8 @@ class Neat(Strategy):
         input_size = input_shape  # .flatten()
         output_size = output_shape  # .flatten()
 
-        self.network = Network(input_size, output_size, self.activation)
+        # Add an additional node as bias
+        self.network = Network(input_size + 1, output_size, self.activation)
 
         self.unassigned_genomes = []
 
@@ -82,8 +83,6 @@ class Neat(Strategy):
 
         rewards = np.array(rewards)
 
-        self.kill_underperformer()
-
         # OpenAi often uses negative rewards(punishments) which will affect the shared species rewards.
         # Fixed by allways setting the lowest reward of any species to 0
         # min_reward = np.min(rewards)
@@ -95,7 +94,7 @@ class Neat(Strategy):
                 fitness += genome.fitness * importance_factor
                 importance_factor = importance_factor * self.fitness_decay
 
-            species.fitness = fitness
+            species.fitness = fitness  # / len(species.genomes)
 
             print("- Species Fitness: {:6.3f}, Best Genome: {:6.3f}, Size: {}".format(
                 species.fitness,
@@ -105,15 +104,17 @@ class Neat(Strategy):
 
             data["species"][species.id] = dict()
             data["species"][species.id]["fitness"] = species.fitness
-            data["species"][species.id]["fitness_max"] = species.fitness
+            data["species"][species.id]["fitness_max"] = species.fitness_max
             data["species"][species.id]["size"] = len(species.genomes)
 
-        self.reproduce()
-        self.mutate()
-
+        self.kill_underperformer()
         # Assign all individuals to their species
         self.assign_species()
+
         self.remove_extinct_species()
+
+        self.reproduce()
+        #self.mutate()
 
         data["rewards"] = np.mean(rewards, axis=-1)
         data["num_species"] = len(self.species)
@@ -421,17 +422,16 @@ class Neat(Strategy):
         # Remove all empty layers
         layers = [layer for layer in layers if layer != []]
 
-        print(layers)
-
         G = nx.Graph()
 
         for index, layer in zip(range(len(layers)), layers):
             for node_id in layer:
-                G.add_node(node_id, layer=index)
-                for con in node_genes[node_gene_ids.index(node_id)].get_node().get_connections():
-                    if con.active:
-                        G.add_edge(con.get_input().get_id(),
-                                   con.get_output().get_id(), weight=round(con.weight, 3))
+                if not node_genes[node_gene_ids.index(node_id)].disabled:
+                    G.add_node(node_id, layer=index)
+                    for con in node_genes[node_gene_ids.index(node_id)].get_node().get_connections():
+                        if con.active:
+                            G.add_edge(con.get_input().get_id(),
+                                       con.get_output().get_id(), weight=round(con.weight, 3))
 
         for node, index in zip(self.network.get_output_nodes(), range(self.network.get_outputs())):
             G.add_node("output_" +
@@ -444,11 +444,11 @@ class Neat(Strategy):
                        str(node.get_id()), weight=1)
 
         # Remove unconnected nodes
-        # to_be_removed = [x for x in G.nodes() if G.degree(
-        #    x) == 0 and x >= self.network.get_inputs()]
+        to_be_removed = [x for x in G.nodes() if G.degree[x] ==
+                         0 and x >= self.network.get_inputs()]
 
-        to_be_removed = [node for (node, layer)
-                         in G.nodes(data="layer") if layer == None]
+        to_be_removed += [node for (node, layer)
+                          in G.nodes(data="layer") if layer == None]
 
         for x in to_be_removed:
             G.remove_node(x)

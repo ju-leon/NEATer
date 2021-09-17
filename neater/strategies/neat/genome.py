@@ -18,13 +18,15 @@ class GenomeWrapper():
         self.network = network
         self.genome = _neat.Genome(network)
 
+        self.genome.init_node_genes()
+
         self.p_mutate_node = kwargs.get("p_mutate_node", 0.2)
         self.p_mutate_connection = kwargs.get("p_mutate_connection", 0.2)
         self.p_mutate_weight_shift = kwargs.get("p_mutate_weight_shift", 0.2)
         self.p_mutate_weight_random = kwargs.get("p_mutate_weight_random", 0.2)
         self.p_mutate_toggle_connection = kwargs.get(
             "p_mutate_toggle_connection", 0.2)
-        self.p_mutate_bias = kwargs.get("p_mutate_bias", 0.2)
+        self.p_mutate_bias = kwargs.get("p_mutate_bias", 0)
         self.p_mutate_toggle_node = kwargs.get("p_mutate_toggle_node", 0.2)
 
         self.kwargs = kwargs
@@ -49,7 +51,7 @@ class GenomeWrapper():
 
         if decide(self.p_mutate_bias):
             self.mutate_bias_shift()
-            
+
         if decide(self.p_mutate_bias):
             self.mutate_bias_random()
 
@@ -57,8 +59,8 @@ class GenomeWrapper():
             self.mutate_disable_node()
 
     def mutate_node(self) -> None:
-        bias = np.random.normal(0, 1)
-        self.genome.mutate_node(bias)
+        #bias = np.random.normal(0, 1)
+        self.genome.mutate_node(1)
 
     def mutate_connection(self, scale=0.8) -> None:
         weight = np.random.normal(0, scale)
@@ -103,5 +105,28 @@ class GenomeWrapper():
         return self.fitness < other.fitness
 
     def __repr__(self):
-        return "[Genome: fitness={}]".format(self.fitness)
+        edge_gene_repr = ""
+        for edge_gene in self.genome.get_edge_genes():
+            edge_gene_repr += "[{} - {}->{}: weight={:.2f}, disabled={}]".format(
+                edge_gene.get_id(),
+                edge_gene.get_edge().get_input().get_id(),
+                edge_gene.get_edge().get_output().get_id(),
+                edge_gene.weight,
+                edge_gene.disabled
+            )
+            edge_gene_repr += "\n"
+
+        node_gene_repr = ""
+        for node_gene in self.genome.get_node_genes():
+            node_gene_repr += "[{}: bias={:.2f}, disabled={}]".format(
+                node_gene.get_id(),
+                node_gene.bias,
+                node_gene.disabled
+            )
+            node_gene_repr += "\n"
+
+        return "Genome: fitness={} \nnode_genes: \n{}\nedge_genes: \n{}".format(
+            self.fitness,
+            node_gene_repr,
+            edge_gene_repr)
         # return "[edge_genes: {}, node_genes: {}]".format([gene.edge.id for gene in self.edge_genes], [gene.node.id for gene in self.node_genes])

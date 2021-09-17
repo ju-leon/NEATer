@@ -44,7 +44,7 @@ class Species():
 
             observation = self.env.reset()
             for _ in range(epoch_len):
-                pred = self.network.forward(observation)
+                pred = self.network.forward(np.append(observation, [1]))
 
                 if self.discrete:
                     pred = np.argmax(pred)
@@ -70,7 +70,7 @@ class Species():
     def reproduce(self, amount, stud=True):
         for _ in range(amount):
             if stud and len(self.genomes) > 1:
-                """
+
                 num_genomes = len(self.genomes)
 
                 propa1 = np.linspace(1.3, 0.7, num=num_genomes)
@@ -90,17 +90,19 @@ class Species():
                     available, p=propa2)
                 parent1 = self.genomes[index1]
                 parent2 = self.genomes[index2]
-                """
-                parent1 = self.genomes[0]
-                parent2 = choice(self.genomes)
 
+                #parent1 = self.genomes[0]
+                #parent2 = choice(self.genomes)
             else:
                 parent1 = choice(self.genomes)
                 parent2 = choice(self.genomes)
 
             if parent1 != parent2:
                 child = parent1.crossbreed(parent2)
+
                 if child != None:
+                    child.mutate()
+
                     self.genomes.append(child)
 
     def mutate(self, p):

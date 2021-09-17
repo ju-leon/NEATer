@@ -37,10 +37,15 @@ class Agent():
 
             if stat_intervall != None and generation % stat_intervall == 0:
                 self.strategy.plot(
-                    "stats/generation-{}.png".format(generation))
+                    "stats/generation-{}.png".format(1))
 
                 self.plot_species(history,
-                                  "stats/species-{}.png".format(generation))
+                                  "stats/species-{}.png".format(1))
+
+                self.plot_performance(history,
+                                      "stats/performance-{}.png".format(1))
+
+                #print(self.strategy.get_best_genome())
 
         return history
 
@@ -62,6 +67,44 @@ class Agent():
 
         plt.stackplot(list(range(len(histogram))), species_histogram.values(),
                       labels=species_histogram.keys())
+
+        plt.savefig(path, bbox_inches='tight')
+        plt.close()
+
+    def plot_performance(self, histogram, path):
+        species_histogram = dict()
+        individual_histogram = dict()
+        for entry, start in zip(histogram, range(len(histogram))):
+            for species in entry["species"]:
+                if species in species_histogram:
+                    species_histogram[species].append(
+                        entry["species"][species]["fitness"])
+
+                    individual_histogram[species].append(
+                        entry["species"][species]["fitness_max"])
+                else:
+                    species_histogram[species] = [float('-inf')] * start
+                    species_histogram[species].append(
+                        entry["species"][species]["fitness"])
+
+                    individual_histogram[species] = [float('-inf')] * start
+                    individual_histogram[species].append(
+                        entry["species"][species]["fitness_max"])
+
+        for key in species_histogram:
+            species_histogram[key] = species_histogram[key] + \
+                ([float('-inf')] * (len(histogram) - len(species_histogram[key])))
+
+            individual_histogram[key] = individual_histogram[key] + \
+                ([float('-inf')] * (len(histogram) - len(individual_histogram[key])))
+
+        values = np.array(list(species_histogram.values())).T
+        values = np.max(values, axis=-1)
+        plt.plot(list(range(len(histogram))), values)
+
+        values_max = np.array(list(individual_histogram.values())).T
+        values_max = np.max(values_max, axis=-1)
+        plt.plot(list(range(len(histogram))), values_max)
 
         plt.savefig(path, bbox_inches='tight')
         plt.close()
